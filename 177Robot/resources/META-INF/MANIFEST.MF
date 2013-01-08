@@ -1,6 +1,6 @@
 MIDlet-Name: 177Robot
 MIDlet-Version: 1.0.0
 MIDlet-Vendor: FIRST
-MIDlet-1: RobotTemplate, , edu.wpi.first.wpilibj.templates.RobotTemplate
+MIDlet-1: Team177Robot, , edu.wpi.first.wpilibj.templates.Team177Robot
 MicroEdition-Profile: IMP-1.0
 MicroEdition-Configuration: CLDC-1.1

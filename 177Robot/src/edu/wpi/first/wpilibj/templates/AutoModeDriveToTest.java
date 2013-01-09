@@ -3,7 +3,6 @@
  */
 package edu.wpi.first.wpilibj.templates;
 
-import edu.wpi.first.wpilibj.Timer;
 
 /**
  *
@@ -15,29 +14,26 @@ public class AutoModeDriveToTest extends AutoMode {
 
     public AutoModeDriveToTest(Team177Robot robot) {
         super(robot);
+        System.out.println("AutoModeDriveToTest Constructor");
     }
 
-    public void autoContinous() {
+    public void autoPeriodic() {
         switch(StepCount) {
             case 0:
                 //Drive Forward 3 feet
                 if(DriveTo(36,0,0.5)) {
                     StepCount++;
                 }
-                break;        
+                break;
             case 1:
                 //Turn to right
                 if(DriveTo(robot.locator.GetX(),-36,0)) {
                     StepCount++;
                 }
-                break;        
+                break;
             default:
-                robot.drive.tankDrive(0.0,0.0);                                
-        }                
-        Timer.delay(0.01);
-    }
-
-    public void autoPeriodic() {
+                robot.drive.tankDrive(0.0,0.0);
+        }
     }
        
     public String getName() {

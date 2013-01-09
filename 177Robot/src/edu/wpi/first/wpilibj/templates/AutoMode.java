@@ -6,6 +6,7 @@ package edu.wpi.first.wpilibj.templates;
 
 import com.sun.squawk.util.MathUtils;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Abstract class to provide the framework for handling multiple autonomous modes
@@ -47,8 +48,7 @@ public abstract class AutoMode {
         SteerPID = new BasicPIDController(SteerP,SteerI,SteerD);
         SteerPID.setOutputRange(SteerMin, SteerMax);
     }
-    
-    public abstract void autoContinous();
+        
     public abstract void autoPeriodic();
     public abstract String getName();
     
@@ -74,7 +74,7 @@ public abstract class AutoMode {
      * @param y - y coordinate of target
      * @param speed - Speed to drive, a negative value will cause the robot to backup.
      *                A Speed of 0 will cause the robot to turn to the target without moving
-     * @return - Boolean value indicating if the robot is at the target or not.
+     * @return - Boolean value indicating if the robot is at the target or not (true = at target).
      * @author schroed
      */     
     public boolean DriveTo(double x, double y, double speed) 
@@ -87,6 +87,8 @@ public abstract class AutoMode {
             DrivePID.reset();
             SteerPID.reset();
             lastRanDriveTo = Timer.getFPGATimestamp();
+            SmartDashboard.putNumber("Target X", x);
+            SmartDashboard.putNumber("Target Y", y);            
         }
         //Calculate time step
         double now = Timer.getFPGATimestamp();
@@ -124,7 +126,7 @@ public abstract class AutoMode {
 
         //Move the robot - Would this work better if we multiplyed by the steering PID output?
         robot.drive.tankDrive(drive+steer, drive-steer);
-        
+                
         if((distance < DriveMargin) || (Math.abs(targetHeading) < SteerMargin && speed == 0 )) {
             return true;
         } else {

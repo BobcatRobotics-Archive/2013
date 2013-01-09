@@ -3,8 +3,6 @@
  */
 package edu.wpi.first.wpilibj.templates;
 
-import edu.wpi.first.wpilibj.Timer;
-
 /**
  *
  * @author schroed
@@ -17,17 +15,17 @@ public class AutoModeBasicDriveTest extends AutoMode {
     
     public AutoModeBasicDriveTest(Team177Robot robot) {
         super(robot);
+        System.out.println("AutoModeBasicDriveTest Constructor");
     }
 
-    public void autoContinous() {        
-        
-        switch(StepCount) {
+    public void autoPeriodic() {
+         switch(StepCount) {
             case 0:
                 //Drive forward for approx 1/2 second
                 robot.drive.tankDrive(0.5,0.5);
                 if(SubStepCount > 50) {
                     StepCount++;
-                    SubStepCount = 0;                    
+                    SubStepCount = 0;
                 }
                 SubStepCount++;
                 break;
@@ -44,12 +42,8 @@ public class AutoModeBasicDriveTest extends AutoMode {
                 }
                 break;
             default:
-                robot.drive.tankDrive(0.0,0.0);                                
+                robot.drive.tankDrive(0.0,0.0);
         }
-        Timer.delay(0.01);
-    }
-
-    public void autoPeriodic() {
     }
 
     public void autoInit() {

@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.can.CANNotInitializedException;
 import edu.wpi.first.wpilibj.can.CANTimeoutException;
 import edu.wpi.first.wpilibj.communication.UsageReporting;
 import edu.wpi.first.wpilibj.parsing.IUtility;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * This is a modification of the wpilibj RobotDrive class to handle a 6 motor drive
@@ -417,8 +418,11 @@ public class RobotDrive6 implements MotorSafety, IUtility {
         if (m_rearLeftMotor == null || m_rearRightMotor == null) {
             throw new NullPointerException("Null motor provided");
         }
-
+        
         byte syncGroup = (byte)0x80;
+        
+        SmartDashboard.putNumber("Left Drive", leftOutput); 
+        SmartDashboard.putNumber("Right Drive", rightOutput); 
 
         if (m_frontLeftMotor != null) {
             m_frontLeftMotor.set(limit(leftOutput) * m_invertedMotors[RobotDrive6.MotorType.kFrontLeft_val] * m_maxOutput, syncGroup);

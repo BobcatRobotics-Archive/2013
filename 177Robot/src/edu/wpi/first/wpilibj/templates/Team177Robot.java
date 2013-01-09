@@ -70,9 +70,7 @@ public class Team177Robot extends IterativeRobot {
     /* Automode Variables */
     int autoMode = 0;
     AutoMode auto;
-    
-    
-    private double MotorSpeed = 0;
+
     
     /**
      * This function is run when the robot is first started up and should be
@@ -100,13 +98,13 @@ public class Team177Robot extends IterativeRobot {
         LiveWindow.addActuator("Drive", "Right Front", frontRightMotor);
         LiveWindow.addActuator("Drive", "Right Mid", midRightMotor);
         LiveWindow.addActuator("Drive", "Right Rear", rearRightMotor);
-        
+
         /* Turn on watchdog */
         getWatchdog().setEnabled(true);
 
     }
     
-    public void autonomousInit() {       
+    public void autonomousInit() {           
         if(auto != null) {
             auto.autoInit();
         }
@@ -118,12 +116,8 @@ public class Team177Robot extends IterativeRobot {
     public void autonomousPeriodic() {  
         if(auto != null) {
             auto.autoPeriodic();        
-        }
-    }
-    
-    public void autonomousContinuous() {                
-        if(auto != null) {
-            auto.autoContinous();
+        } else {
+            drive.tankDrive(0, 0);
         }
     }
 
@@ -155,7 +149,8 @@ public class Team177Robot extends IterativeRobot {
         LiveWindow.run();
         getWatchdog().feed();
         Timer.delay(0.01);     
-        drive.tankDrive(0,0);
+        //drive.tankDrive(0,0);
+        drive.setSafetyEnabled(false);
     }
     
     public void disabledPeriodic() {        
@@ -173,7 +168,7 @@ public class Team177Robot extends IterativeRobot {
                             auto = new AutoModeDriveToTest(this);
                             break;    
                         default:
-                            auto = null;
+                            auto = null;                            
                     }
                 }                
             } 

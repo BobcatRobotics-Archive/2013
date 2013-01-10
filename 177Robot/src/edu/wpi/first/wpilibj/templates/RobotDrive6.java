@@ -103,6 +103,36 @@ public class RobotDrive6 implements MotorSafety, IUtility {
     protected static boolean kMecanumCartesian_Reported = false;
     protected static boolean kMecanumPolar_Reported = false;
 
+     /**
+     * Constructor for RobotDrive with 4 motors specified as SpeedController objects.
+     * Speed controller input version of RobotDrive (see previous comments).
+     * @param rearLeftMotor The back left SpeedController object used to drive the robot.
+     * @param frontLeftMotor The front left SpeedController object used to drive the robot
+     * @param rearRightMotor The back right SpeedController object used to drive the robot.
+     * @param frontRightMotor The front right SpeedController object used to drive the robot.
+     */
+    public RobotDrive6(SpeedController frontLeftMotor, SpeedController rearLeftMotor,
+            SpeedController frontRightMotor, SpeedController rearRightMotor) {
+        if (frontLeftMotor == null || rearLeftMotor == null || frontRightMotor == null || rearRightMotor == null) {
+            m_frontLeftMotor = m_rearLeftMotor = m_frontRightMotor = m_rearRightMotor = null;
+            throw new NullPointerException("Null motor provided");
+        }
+        m_frontLeftMotor = frontLeftMotor;
+        m_rearLeftMotor = rearLeftMotor;
+        m_frontRightMotor = frontRightMotor;
+        m_rearRightMotor = rearRightMotor;
+        m_midRightMotor = null;
+        m_midLeftMotor = null;
+        m_sensitivity = kDefaultSensitivity;
+        m_maxOutput = kDefaultMaxOutput;
+        for (int i = 0; i < kMaxNumberOfMotors; i++) {
+            m_invertedMotors[i] = 1;
+        }
+        m_allocatedSpeedControllers = false;
+		setupMotorSafety();
+		drive(0, 0);
+    }
+
     /**
      * Constructor for RobotDrive with 6 motors specified as SpeedController objects.
      * Speed controller input version of RobotDrive (see previous comments).

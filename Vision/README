@@ -1,0 +1,16 @@
+Vision Code (Requires OpenCV >= 2.0)
+
+Compile Windowed Mode (Additionally Requires GTK/Qt):
+	In the "Vision" directory, execute:
+		make windowed
+	To Run:
+		./BasicVision_Windowed PATHTOSOURCEIMG PATHTOTEMPLATEIMG
+
+
+Compile Standard Mode
+	In the "Vision" directory, execute:
+		make std
+	To Run:
+		./BasicVision PATHTOSOURCEIMG PATHTOTEPLATEIMG
+
+Last Updated: 01/11/2013 Daniel Cohen

@@ -21,7 +21,7 @@ public abstract class AutoMode {
     
     /* Variables & Constants used for DriveTo PID Controls */ 
     private static double SteerMargin = 3.0; //Margin to consider robot facing target (degrees)
-    private static double DriveMargin = 2.0;  //Margin to consider the robot at target (in)
+    private static double DriveMargin = 2.0; //Margin to consider the robot at target (in)
     
     private static double DriveP = 0.05;  //Preportial gain for Drive System
     private static double DriveI = 0.0;   //Integral gain for Drive System
@@ -133,5 +133,99 @@ public abstract class AutoMode {
             return false;
         }        
     }
-    
+
+    /**
+     *
+     * Drive the robot to the specified location using the park algorithm
+     *
+     *      -----------    +
+     *      | Robot   |
+     *      |   --->  |    Y
+     *      |         |
+     *      -----------    -
+     *       -   X    +
+     *  Robot starts match at 0,0 heading 0
+     *
+     *  Based on: http://www.dis.uniroma1.it/~labrob/pub/papers/Ramsete01.pdf
+     *
+     * @param x - x coordinate of target
+     * @param y - y coordinate of target
+     * @param theta - desired parking angle
+     * @param speed - Speed to drive, a negative value will cause the robot to backup.
+     *                A Speed of 0 will cause the robot to turn to the target without moving
+     * @return - Boolean value indicating if the robot is at the target or not (true = at target).
+     * @author schroed
+     */
+    public boolean Park(double x, double y, double theta, double speed)  {
+        //Control constants
+        double k1 = 1.0d;
+        double k2 = 3.0d;
+        double k3 = 2.0d;
+        double width = 28; //width of the robot in inches
+
+        double steer, drive;
+        //Reinitalize if the target has changed
+        if(x != lastTargetX || y != lastTargetY) {
+            lastTargetX = x;
+            lastTargetY = y;
+            lastRanDriveTo = Timer.getFPGATimestamp();
+            SmartDashboard.putNumber("Target X", x);
+            SmartDashboard.putNumber("Target Y", y);
+        }
+
+        double deltaX = x - robot.locator.GetX();
+        double deltaY = y - robot.locator.GetY();
+        double distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+
+        //determine angle to target relative to field
+        double targetHeading = MathUtils.atan2(deltaY, deltaX) - Math.toRadians(robot.locator.GetHeading()) + Math.PI;  // radians
+        if(speed < 0) {
+            //reverse heading if going backwards
+            targetHeading -= Math.PI;
+        }
+
+        //calculate drive and steering in f/s and rad/s
+        double v = k1*distance*Math.cos(targetHeading);
+        double w = (k2*targetHeading) + k1*((Math.sin(targetHeading)*Math.cos(targetHeading))/targetHeading)*(targetHeading+k3*(targetHeading+theta));
+
+        //Limit Control Outputs
+        double Vmax = 5.0d*speed; // f/s - TODO This assumes linear speed response... Validate this
+        double Wmax = (Vmax*2)/width; // rad/s - TODO Validate this
+        double V_Vmax = Math.abs(v)/Vmax;
+        double W_Wmax = Math.abs(w)/Wmax;
+        if(V_Vmax < 1 && W_Wmax < 1) {
+            //Simple case, outputs not limited
+            drive = v;
+            steer = w;
+        } else if (V_Vmax > W_Wmax) {
+            //limit based on driving velocity (v)
+            if (v < 0) {
+                drive = Vmax * -1;
+            } else {
+                drive = Vmax;
+            }
+            steer = w/V_Vmax;
+        } else {
+            //limit based on steering velcity (w)
+            if(w < 0) {
+                steer = Wmax * -1;
+            } else {
+                steer = Wmax;
+            }
+            drive = v/W_Wmax;
+        }
+
+        steer *= (width/2);
+
+        //Move the robot - scale outputs to 0-1 range
+        robot.drive.tankDrive((drive+steer)*(1/Vmax), (drive-steer)*(1/Vmax));
+
+        if((distance < DriveMargin) || (Math.abs(Math.toDegrees(targetHeading)) < SteerMargin && speed == 0 )) {
+            return true;
+        } else {
+            return false;
+        }   
+
+    }
+
 }

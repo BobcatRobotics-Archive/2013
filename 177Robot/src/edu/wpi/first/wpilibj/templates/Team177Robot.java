@@ -118,6 +118,10 @@ public class Team177Robot extends IterativeRobot {
         } else {
             drive.tankDrive(0, 0);
         }
+        
+        SmartDashboard.putNumber("X", locator.GetX());
+        SmartDashboard.putNumber("Y", locator.GetY());
+        SmartDashboard.putNumber("Heading", locator.GetHeading());
     }
 
     /**

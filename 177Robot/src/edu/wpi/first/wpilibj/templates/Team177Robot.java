@@ -48,7 +48,7 @@ public class Team177Robot extends IterativeRobot {
     Victor shooterMotor2 = new Victor(8);
     
     //RobotDrive6 drive = new RobotDrive6(frontLeftMotor,midLeftMotor, rearLeftMotor,frontRightMotor,midRightMotor,rearRightMotor);
-    RobotDrive6 drive = new RobotDrive6(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
+    RobotDrive6 drive = new RobotDrive6(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor); //For 4 motor drivetrain
 
     
     /* Instansiate Joysticks */
@@ -164,6 +164,9 @@ public class Team177Robot extends IterativeRobot {
                         break;
                     case 2:
                         auto = new AutoModeDriveToTest(this);
+                        break;
+                    case 3:
+                        auto = new AutoModeParkTest(this);
                         break;
                     default:
                         auto = null;

@@ -27,18 +27,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Team177Robot extends IterativeRobot {
     
-     /** Right Joystick Buttons **/
+    /** Right Joystick Buttons **/
     private static final int shiftButton = 3; //Right Joystick button 3 is the shifter
+
+    /** Driver station Digital Channels **/
+    // Automode switches are channels 1-3
+    private static final int missleSwitchChannel = 4;
     
     /** IO Definitions **/
     
     /* Instansiate Speed Controlers and Drive */    
-    Victor frontLeftMotor = new Victor(4);
-    Victor frontRightMotor = new Victor(3);
-    
     Victor rearLeftMotor = new Victor(1);
     Victor rearRightMotor = new Victor(2);
-    
+
+    Victor frontLeftMotor = new Victor(3);
+    Victor frontRightMotor = new Victor(4);
+        
     Victor midLeftMotor = new Victor(5);
     Victor midRightMotor = new Victor(6);
     
@@ -63,6 +67,7 @@ public class Team177Robot extends IterativeRobot {
      */
     Compressor compressor = new Compressor(1,1);
     Solenoid shifter = new Solenoid(1);
+    Solenoid shooterFeed = new Solenoid(1);
     
     /* Driver Station Interface */
     DriverStationEnhancedIO eio;
@@ -91,6 +96,7 @@ public class Team177Robot extends IterativeRobot {
         /*Setup LiveWindow */
         LiveWindow.addActuator("Shooter Testing", "Shooter 1", shooterMotor1);
         LiveWindow.addActuator("Shooter Testing", "Shooter 2", shooterMotor2);
+        LiveWindow.addActuator("Shooter Testing", "Shooter Feed", shooterFeed);
          
         LiveWindow.addActuator("Drive", "Left Front", frontLeftMotor);
         LiveWindow.addActuator("Drive", "Left Mid", midLeftMotor);
@@ -136,6 +142,8 @@ public class Team177Robot extends IterativeRobot {
         /* Drive Code */ 
         drive.tankDrive(leftStick, rightStick); // drive with the joysticks
         shifter.set(rightStick.getRawButton(shiftButton));
+
+        shooterFeed.set(!m_ds.getDigitalIn(missleSwitchChannel));
                        
         SmartDashboard.putNumber("X", locator.GetX());
         SmartDashboard.putNumber("Y", locator.GetY());

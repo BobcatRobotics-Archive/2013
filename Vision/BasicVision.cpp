@@ -108,8 +108,8 @@ void MatchAndExtract()
   for( int j = 0; j < dst_norm.rows ; j++ ) {
     for( int i = 0; i < dst_norm.cols; i++ ) {
             if( (int) dst_norm.at<float>(j,i) > 100 ) {
-	      				cornerxs.push_back(i);
-	      				cornerys.push_back(j);
+	      		cornerxs.push_back(i);
+	      		cornerys.push_back(j);
               }
           }
      }
@@ -122,9 +122,9 @@ void MatchAndExtract()
   
   /// Print coordinates to STOUT 
   cout << "P1: (" << cornerxs[minXind] << ", " << cornerys[minXind] << ")" << endl;
-	cout << "P2: (" << cornerxs[maxXind] << ", " << cornerys[maxXind] << ")" << endl;
-	cout << "P3: (" << cornerxs[minYind] << ", " << cornerys[minYind] << ")" << endl;
-	cout << "P4: (" << cornerxs[maxYind] << ", " << cornerys[maxYind] << ")" << endl;
+  cout << "P2: (" << cornerxs[maxXind] << ", " << cornerys[maxXind] << ")" << endl;
+  cout << "P3: (" << cornerxs[minYind] << ", " << cornerys[minYind] << ")" << endl;
+  cout << "P4: (" << cornerxs[maxYind] << ", " << cornerys[maxYind] << ")" << endl;
 
 
   return;

@@ -19,10 +19,11 @@ public class AutoModeBasicDriveTest extends AutoMode {
     }
 
     public void autoPeriodic() {
+         System.out.println("Step Cnt"+StepCount);
          switch(StepCount) {
             case 0:
                 //Drive forward for approx 1/2 second
-                robot.drive.tankDrive(0.5,0.5);
+                robot.drive.tankDrive(-0.5,-0.5);
                 if(SubStepCount > 50) {
                     StepCount++;
                     SubStepCount = 0;
@@ -30,16 +31,12 @@ public class AutoModeBasicDriveTest extends AutoMode {
                 SubStepCount++;
                 break;
             case 1:
-                //Turn 90 degrees
-                startHeading = robot.locator.GetHeading();
-                robot.drive.tankDrive(0.5,-0.5);
-                StepCount++;
-                break;
-            case 2:
                 if(((startHeading-robot.locator.GetHeading())+360)%360 > 90) {
                     robot.drive.tankDrive(0.0,0.0);
                     StepCount++;
-                }
+                } else {
+                    robot.drive.tankDrive(-0.75,+0.75);
+                }                
                 break;
             default:
                 robot.drive.tankDrive(0.0,0.0);

@@ -25,12 +25,13 @@ public class AutoModeDriveToTest extends AutoMode {
                     StepCount++;
                 }
                 break;
-            case 1:
+            /*case 1:
                 //Turn to right
                 if(DriveTo(robot.locator.GetX(),-36,0)) {
                     StepCount++;
                 }
                 break;
+                */
             default:
                 robot.drive.tankDrive(0.0,0.0);
         }

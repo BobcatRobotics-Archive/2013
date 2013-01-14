@@ -23,7 +23,7 @@ public abstract class AutoMode {
     private static double SteerMargin = 3.0; //Margin to consider robot facing target (degrees)
     private static double DriveMargin = 2.0; //Margin to consider the robot at target (in)
     
-    private static double DriveP = 0.05;  //Preportial gain for Drive System
+    private static double DriveP = 0.1;  //Preportial gain for Drive System
     private static double DriveI = 0.0;   //Integral gain for Drive System
     private static double DriveD = 0.0;   //Derivative gain for Drive System
     private static double DriveMax = 1;   //Max Saturation value for control
@@ -98,33 +98,37 @@ public abstract class AutoMode {
         double deltaX = x - robot.locator.GetX();
         double deltaY = y - robot.locator.GetY();
         double distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-        
+        System.out.println("DeltaX: "+deltaX+"  DeltaY: "+deltaY);
         //determine angle to target relative to field
         double targetHeading = Math.toDegrees(MathUtils.atan2(deltaY, deltaX));  // +/- 180 degrees
-        
+        System.out.println("Target Heading: "+targetHeading);
         if(speed < 0) {
             //reverse heading if going backwards
             targetHeading += 180;
         }
         
         //Determine  angle to target relative to robot
-        double bearing = targetHeading + robot.locator.GetHeading();
+        
+        double bearing = (targetHeading + robot.locator.GetHeading())%360;
         if (bearing > 180) {
-            bearing = bearing - 180; //Quicker to turn the other direction
+            bearing = bearing - 360; //Quicker to turn the other direction
         }
         
         /* Steering PID Control */
         steer = SteerPID.calculate(bearing, dT);
+        System.out.println("BEARING: "+bearing);
         
         /* Drive PID Control */                
         if(speed == 0) {
             //Just turn to the target, no PI Control
             drive = 0;
         } else {
-            drive = DrivePID.calculate(distance, dT)*speed;
+            drive = -1.0*DrivePID.calculate(distance, dT)*speed;
         }        
 
         //Move the robot - Would this work better if we multiplyed by the steering PID output?
+        System.out.println("DRIVE: "+drive);
+        System.out.println("STEER: "+steer);
         robot.drive.tankDrive(drive+steer, drive-steer);
                 
         if((distance < DriveMargin) || (Math.abs(targetHeading) < SteerMargin && speed == 0 )) {

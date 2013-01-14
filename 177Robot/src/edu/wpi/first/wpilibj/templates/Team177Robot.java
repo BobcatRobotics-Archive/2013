@@ -45,8 +45,8 @@ public class Team177Robot extends IterativeRobot {
     Victor rearLeftMotor = new Victor(1);
     Victor rearRightMotor = new Victor(2);
 
-    Victor frontLeftMotor = new Victor(3);
-    Victor frontRightMotor = new Victor(4);
+    Victor frontLeftMotor = new Victor(4);
+    Victor frontRightMotor = new Victor(3);
         
     Victor midLeftMotor = new Victor(5);
     Victor midRightMotor = new Victor(6);
@@ -76,7 +76,7 @@ public class Team177Robot extends IterativeRobot {
     Compressor compressor = new Compressor(1,1);
     Solenoid shifter = new Solenoid(1);
     Solenoid omni = new Solenoid(2);
-
+    
     Solenoid shooterFeed = new Solenoid(3);
             
     /* Automode Variables */
@@ -95,6 +95,7 @@ public class Team177Robot extends IterativeRobot {
         compressor.start();
         
         /* Configure and Start the locator */
+        //2011 locator.setDistancePerPulse(0.15574f, 0.15748f);  /*Set encoder scaling */
         locator.setDistancePerPulse(0.15574f, 0.15748f);  /*Set encoder scaling */
         locator.start();
                
@@ -117,7 +118,8 @@ public class Team177Robot extends IterativeRobot {
 
     }
     
-    public void autonomousInit() {           
+    public void autonomousInit() {  
+        locator.Reset(); //This maybe a problem as it takes a couple of seconds for it to actually reset
         if(auto != null) {
             auto.autoInit();
         }

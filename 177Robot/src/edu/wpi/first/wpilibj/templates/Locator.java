@@ -5,6 +5,7 @@
 package edu.wpi.first.wpilibj.templates;
 
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
 /**
  * Keep track of robots location in x,y grid with 0,0 being starting location
@@ -21,6 +22,9 @@ public class Locator {
         headingGyro = new EnhancedGyro(gyroChannel);
         leftEncoder = new Encoder(leftEncoderA, leftEncoderB);
         rightEncoder = new Encoder(rightEncoderA, rightEncoderB);
+        
+        LiveWindow.addActuator("Locater", "left Encoder", leftEncoder);
+        LiveWindow.addActuator("Locater", "right Encoder", rightEncoder);
         
         //Set Default Values
         leftEncoder.setDistancePerPulse(1.0);
@@ -93,16 +97,17 @@ public class Locator {
                 right = rightEncoder.getDistance();                
                 /* Average the two encoder values */ 
                 /* TODO - posiably add error checking to detect a failed encoder and ignore it */
-                distance = ((left-lastLeft )+(right-lastRight ))/2.0;                               
+                //distance = ((left-lastLeft )+(right-lastRight ))/2.0;                               
+                distance = (right-lastRight ); //left encoder doesn't work on 2012 drivetrain                               
                 heading = headingGyro.GetHeading();
                 
                 /* Do fancy trig stuff */
-                deltax = distance*Math.sin(Math.toRadians(heading));
-                deltay = distance*Math.cos(Math.toRadians(heading));
+                deltax = distance*Math.cos(Math.toRadians(heading));
+                deltay = distance*Math.sin(Math.toRadians(heading));
                 
                 /* Update Location */
                 x += deltax;
-                y += deltay;
+                y -= deltay;
                 
                 /* Update history variables */
                 lastLeft = left;

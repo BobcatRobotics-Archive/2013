@@ -23,7 +23,7 @@ public abstract class AutoMode {
     private static double SteerMargin = 3.0; //Margin to consider robot facing target (degrees)
     private static double DriveMargin = 2.0; //Margin to consider the robot at target (in)
     
-    private static double DriveP = 0.1;  //Preportial gain for Drive System
+    private static double DriveP = 0.2;  //Preportial gain for Drive System
     private static double DriveI = 0.0;   //Integral gain for Drive System
     private static double DriveD = 0.0;   //Derivative gain for Drive System
     private static double DriveMax = 1;   //Max Saturation value for control

@@ -42,11 +42,20 @@ public class Team177Robot extends IterativeRobot {
     /** IO Definitions **/
     
     /* Instansiate Speed Controlers and Drive */    
+    /*2012
     Victor rearLeftMotor = new Victor(1);
     Victor rearRightMotor = new Victor(2);
 
     Victor frontLeftMotor = new Victor(4);
     Victor frontRightMotor = new Victor(3);
+    */
+    /*2011*/
+    Victor rearLeftMotor = new Victor(2);
+    Victor rearRightMotor = new Victor(1);
+
+    Victor frontLeftMotor = new Victor(4);
+    Victor frontRightMotor = new Victor(3);
+
         
     Victor midLeftMotor = new Victor(5);
     Victor midRightMotor = new Victor(6);
@@ -63,8 +72,11 @@ public class Team177Robot extends IterativeRobot {
     Joystick rightStick = new Joystick(2);
     Joystick operatorStick = new Joystick(3);
     
-     /* Instansiate Locator - Scaling set in contructor*/
-    Locator locator = new Locator(2,3,4,5,1); /*Left Encoder A,B, Right Encoder A,B, Gyro*/ 
+    /* Instansiate Locator - Scaling set in contructor*/
+    Locator locator = new Locator(2,3,4,5,1); /*Left Encoder A,B, Right Encoder A,B, Gyro*/
+
+    /* Instnsiate VisionListener to get data from vision subsystem */
+    VisionListener vision = new VisionListener();
     
     /* Pnumatics
      * Pressure switch = DIO 1
@@ -95,9 +107,14 @@ public class Team177Robot extends IterativeRobot {
         compressor.start();
         
         /* Configure and Start the locator */
-        //2011 locator.setDistancePerPulse(0.15574f, 0.15748f);  /*Set encoder scaling */
-        locator.setDistancePerPulse(0.15574f, 0.15748f);  /*Set encoder scaling */
+
+        /*Set encoder scaling */
+        //locator.setDistancePerPulse(1.0f, 1.0f);  //2013
+        //locator.setDistancePerPulse(0.15574f, 0.15748f);  //2012
+        locator.setDistancePerPulse(0.095874f, 0.095874f);  //2011
         locator.start();
+
+        vision.start();
                
         /*Setup LiveWindow */
         LiveWindow.addActuator("Shooter Testing", "Shooter 1", shooterMotor1);

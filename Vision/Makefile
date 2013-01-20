@@ -1,5 +1,2 @@
-windowed: BasicVision_Windowed.cpp
-	g++ `pkg-config --cflags opencv` BasicVision_Windowed.cpp -o BasicVision_Windowed `pkg-config --libs opencv`
-
-std: BasicVision.cpp
-	g++ `pkg-config --cflags opencv` BasicVision.cpp -o BasicVision `pkg-config --libs opencv`
+ContourVision: VisionServer.cpp
+	g++ VisionServer.cpp Socket.cpp ServerSocket.cpp -o ContourVision `pkg-config --libs opencv`

@@ -51,6 +51,9 @@ int main( int argc, char** argv)
 * @function process
 **/
 string process(string file, int p0, int d0) {
+  /// Print diagnostic message
+  cout << "Starting frame..." << endl;
+
 
   /// Load image and template
   rgbimg = imread( file, 1 );
@@ -81,7 +84,6 @@ string process(string file, int p0, int d0) {
   double area = 0; 
   for (int i = 0; i < contours.size(); i++) {
     area = contourArea(contours[i]);
-    cout << "i: " << i << " Area: " << area << endl;
     if (area > maxsize) {
          maxsize = area;
          maxi = i;

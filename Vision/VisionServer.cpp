@@ -36,6 +36,7 @@ const int height_in = 18;
 void RunServer(string file);
 string process();
 template <class T> string convertNum(T number);
+double toDegrees(double angle);
 
 /**
  * @function main
@@ -110,7 +111,7 @@ string process(string file, int p0, int d0) {
   cout << "Center (X, Y): (" << minRect.center.x << ", " << minRect.center.y << ")" << endl;*/
 
   /// Return pertinant results to Server thread
-  string output = "$" + convertNum<double>(d) + "," + convertNum<double>(deltax) + "," + convertNum<double>(deltay) + "$";
+  string output = convertNum<double>(d) + "," + convertNum<double>(toDegrees(deltax)) + "," + convertNum<double>(toDegrees(deltay));
 
   return output;
 }
@@ -144,4 +145,11 @@ string convertNum(T number)
    stringstream ss;//create a stringstream
    ss << number;//add number to the stream
    return ss.str();//return a string with the contents of the stream
+}
+
+
+/// Converts Radians to Degrees
+double toDegrees(double angle)
+{
+  return angle*(180/PI);
 }

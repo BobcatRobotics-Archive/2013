@@ -5,6 +5,8 @@
 
 #include "CurlUtils.h"
 
+namespace CurlUtils {
+
 string data; //will hold the url's contents
 
 
@@ -21,15 +23,15 @@ size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up)
     return size*nmemb; //tell curl how many bytes we handled
 }
 
-string fetchImg()
-{
+Mat fetchImg(string url)
+  {
     CURL* curl; //our curl object
     data.clear(); // Clear out old data (Very Important!)
 
     curl_global_init(CURL_GLOBAL_ALL); //pretty obvious
     curl = curl_easy_init();
 
-    curl_easy_setopt(curl, CURLOPT_URL, "http://10.1.77.11/axis-cgi/jpg/image.cgi");
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &writeCallback);
     //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L); //tell curl to output its progress
     curl_easy_setopt(curl, CURLOPT_HEADER, 0);
@@ -39,7 +41,12 @@ string fetchImg()
     curl_easy_cleanup(curl);
     curl_global_cleanup();
 
-    return data;
+    vector<char> chardata (data.begin(), data.end());
+    Mat img = imdecode(chardata, 1);
+
+    return img;
    
    
+  }
+
 }

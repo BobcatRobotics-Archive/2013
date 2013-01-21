@@ -17,8 +17,7 @@
 Mat rgbimg; Mat templ; Mat result; Mat dilateimg;
 Mat binimg; Mat img; Mat erodeimg; Mat gencanny; Mat canny;
 Size dilatesize(20, 20);
-string imgdata = "";
-vector<char> chardata;
+
 
 // Constants
 const int width_in = 24;
@@ -36,6 +35,10 @@ double toDegrees(double angle);
  */
 int main( int argc, char** argv)
 {
+        cout << "Starting 177 Vision Server" << endl;
+	cout << "Format: Distance, DeltaX, DeltaY" << endl;
+	cout << "Version: 2.1" << endl;
+
 	//Initialize the Server 
 	RunServer();
 
@@ -49,11 +52,7 @@ string process(int p0, int d0) {
   cout << "Starting frame..." << endl;
 
   /// Load image from camera (via curl)
-  imgdata = fetchImg();
-  /// Convert to vector
-  vector<char> chardata (imgdata.begin(), imgdata.end());
-  /// Convert to OpenCV Mat
-  rgbimg = imdecode(chardata, 1);
+  rgbimg = CurlUtils::fetchImg("http://10.1.77.11/axis-cgi/jpg/image.cgi");
 
   /// Threshold by BGR values
   inRange(rgbimg, Scalar(200, 80, 0), Scalar(255, 255, 204), binimg);
@@ -131,8 +130,7 @@ try {
 	
 	  try {
 	    while(true) { 
-	        /// Echo results of current image as fast as possible  	    
-	    	cout << "Starting connection" << endl;
+	        /// Echo results of current image as fast as possible
 		new_sock << process(63, 115);
             }
           } catch (SocketException&) {}

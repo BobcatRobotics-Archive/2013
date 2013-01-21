@@ -131,7 +131,7 @@ try {
 	  try {
 	    while(true) { 
 	        /// Echo results of current image as fast as possible
-		new_sock << process(63, 115);
+		new_sock << process(P0, D0);
             }
           } catch (SocketException&) {}
    }

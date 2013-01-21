@@ -6,26 +6,19 @@
  * By Daniel Cohen and FRC Team 177
  */
 
-/* TODO: Modify to run with libCURL images from camera */
 
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include <iostream>
-#include <string>
-#include <cmath>
+
+#include "CVHeader.h"
 #include "ServerSocket.h"
 #include "SocketException.h"
-
-#define PI 3.141592653589793238462643383279502884197
-
-using namespace std;
-using namespace cv;
+#include "CurlUtils.h"
 
 /// Global Variables
 Mat rgbimg; Mat templ; Mat result; Mat dilateimg;
 Mat binimg; Mat img; Mat erodeimg; Mat gencanny; Mat canny;
 Size dilatesize(20, 20);
+string imgdata = "";
+vector<char> chardata;
 
 // Constants
 const int width_in = 24;
@@ -33,8 +26,8 @@ const int height_in = 18;
 
 
 /// Function Headers
-void RunServer(string file);
-string process();
+void RunServer();
+string process(int p0, int d0);
 template <class T> string convertNum(T number);
 double toDegrees(double angle);
 
@@ -44,20 +37,23 @@ double toDegrees(double angle);
 int main( int argc, char** argv)
 {
 	//Initialize the Server 
-	RunServer(argv[1]);
+	RunServer();
 
 }
 
 /**
 * @function process
 **/
-string process(string file, int p0, int d0) {
+string process(int p0, int d0) {
   /// Print diagnostic message
   cout << "Starting frame..." << endl;
 
-
-  /// Load image and template
-  rgbimg = imread( file, 1 );
+  /// Load image from camera (via curl)
+  imgdata = fetchImg();
+  /// Convert to vector
+  vector<char> chardata (imgdata.begin(), imgdata.end());
+  /// Convert to OpenCV Mat
+  rgbimg = imdecode(chardata, 1);
 
   /// Threshold by BGR values
   inRange(rgbimg, Scalar(200, 80, 0), Scalar(255, 255, 204), binimg);
@@ -79,44 +75,51 @@ string process(string file, int p0, int d0) {
   /// Find contours
   findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
 
-  /// Find biggest contour
-  int maxi = 0;
-  double maxsize = contourArea(contours[0]);
-  double area = 0; 
-  for (int i = 0; i < contours.size(); i++) {
-    area = contourArea(contours[i]);
-    if (area > maxsize) {
-         maxsize = area;
-         maxi = i;
+  /// Check to see if any targets in the image (Avoids SEGFAULT!)
+  if(contours.size() > 0) {
+      /// Find biggest contour
+      int maxi = 0;
+      double maxsize = contourArea(contours[0]);
+      double area = 0; 
+      for (int i = 0; i < contours.size(); i++) {
+        area = contourArea(contours[i]);
+        if (area > maxsize) {
+        maxsize = area;
+        maxi = i;
+       }
     }
+
+      /// Find rectangle of best fit
+      RotatedRect minRect = minAreaRect(Mat(contours[maxi]));
+
+      /// Lots of math to find distance and bearing to target
+      double xdist = abs(320 - minRect.center.x); 
+      double ydist = abs(240 - minRect.center.y);
+      double d = (p0*d0)/minRect.size.height;
+      double m_width_in = (minRect.size.width/minRect.size.height)*height_in;
+      double psi = atan(m_width_in/d);
+      double alpha = asin(d/width_in*sin(psi));
+      double theta = (PI/2) - psi - alpha;
+      double deltax = atan(((height_in/minRect.size.height)*xdist)/d);
+      double deltay = atan(((height_in*ydist)/minRect.size.height)/d);
+
+      /// Print pertinant results
+      /*cout << "W: " << minRect.size.width - dilatesize.width  << endl;
+      cout << "H: " << minRect.size.height - dilatesize.height << endl;
+      cout << "Center (X, Y): (" << minRect.center.x << ", " << minRect.center.y << ")" << endl;*/
+
+      /// Return pertinant results to Server thread
+      string output = convertNum<double>(d) + "," + convertNum<double>(toDegrees(deltax)) + "," + convertNum<double>(toDegrees(deltay));
+
+      return output;
+  } else {
+    cout << "Error: No Target in View" << endl;
+    return "";
   }
 
-  /// Find rectangle of best fit
-  RotatedRect minRect = minAreaRect(Mat(contours[maxi]));
-
-  /// Lots of math to find distance and bearing to target
-  double xdist = abs(320 - minRect.center.x); 
-  double ydist = abs(240 - minRect.center.y);
-  double d = (p0*d0)/minRect.size.height;
-  double m_width_in = (minRect.size.width/minRect.size.height)*height_in;
-  double psi = atan(m_width_in/d);
-  double alpha = asin(d/width_in*sin(psi));
-  double theta = (PI/2) - psi - alpha;
-  double deltax = atan(((height_in/minRect.size.height)*xdist)/d);
-  double deltay = atan(((height_in*ydist)/minRect.size.height)/d);
-
-  /// Print pertinant results
-  /*cout << "W: " << minRect.size.width - dilatesize.width  << endl;
-  cout << "H: " << minRect.size.height - dilatesize.height << endl;
-  cout << "Center (X, Y): (" << minRect.center.x << ", " << minRect.center.y << ")" << endl;*/
-
-  /// Return pertinant results to Server thread
-  string output = convertNum<double>(d) + "," + convertNum<double>(toDegrees(deltax)) + "," + convertNum<double>(toDegrees(deltay));
-
-  return output;
 }
 
-void RunServer(string file) {
+void RunServer() {
 
 try {
   /// Set up server socket
@@ -128,8 +131,9 @@ try {
 	
 	  try {
 	    while(true) { 
-	    /// Echo results of current image as fast as possible  	    
-	    new_sock << process(file, 63, 115);
+	        /// Echo results of current image as fast as possible  	    
+	    	cout << "Starting connection" << endl;
+		new_sock << process(63, 115);
             }
           } catch (SocketException&) {}
    }

@@ -37,7 +37,6 @@ int main( int argc, char** argv)
 {
         cout << "Starting 177 Vision Server" << endl;
 	cout << "Format: Distance, DeltaX, DeltaY" << endl;
-	cout << "Version: 2.1" << endl;
 
 	//Initialize the Server 
 	RunServer();
@@ -76,20 +75,26 @@ string process(int p0, int d0) {
 
   /// Check to see if any targets in the image (Avoids SEGFAULT!)
   if(contours.size() > 0) {
-      /// Find biggest contour
-      int maxi = 0;
-      double maxsize = contourArea(contours[0]);
-      double area = 0; 
+
+      /// Find contour bigger than threshold with lowest y value
+      int miny = canny_output.rows;
+      double area = 0;
+      RotatedRect temprect;
+      RotatedRect minRect;
       for (int i = 0; i < contours.size(); i++) {
         area = contourArea(contours[i]);
-        if (area > maxsize) {
-        maxsize = area;
-        maxi = i;
+        if(area > THRESH) {
+           temprect = minAreaRect(contours[i]);
+           if (temprect.center.y < miny) {
+               miny = temprect.center.y;
+               minRect = temprect;
+           }
+       } else {
+          cout << "Error: No Target of Sufficient Size" << endl;
+          return "";
        }
     }
 
-      /// Find rectangle of best fit
-      RotatedRect minRect = minAreaRect(Mat(contours[maxi]));
 
       /// Lots of math to find distance and bearing to target
       double xdist = abs(320 - minRect.center.x); 

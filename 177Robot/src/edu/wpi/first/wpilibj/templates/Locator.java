@@ -56,6 +56,14 @@ public class Locator {
         updateLocation.Reset();        
     }
     
+    public double getLeftRaw() {
+        return leftEncoder.getDistance();
+    }
+    
+    public double getRightRaw() {
+        return rightEncoder.getDistance();
+    }
+    
     public void setDistancePerPulse(float leftDPP, float rightDPP) {
         leftEncoder.setDistancePerPulse(leftDPP);
         rightEncoder.setDistancePerPulse(rightDPP);

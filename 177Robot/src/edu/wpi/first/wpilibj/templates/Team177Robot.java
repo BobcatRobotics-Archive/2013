@@ -54,15 +54,15 @@ public class Team177Robot extends IterativeRobot {
     Victor frontLeftMotor = new Victor(4);
     Victor frontRightMotor = new Victor(3);
     */
-    /*2011
+    /*2011*/
     Victor rearLeftMotor = new Victor(2);
     Victor rearRightMotor = new Victor(1);
 
     Victor frontLeftMotor = new Victor(4);
     Victor frontRightMotor = new Victor(3);
-   */
+   
     
-    /*2013*/
+    /*2013
     Victor rearLeftMotor = new Victor(1);
     Victor rearRightMotor = new Victor(2);
 
@@ -71,7 +71,7 @@ public class Team177Robot extends IterativeRobot {
         
     Victor midLeftMotor = new Victor(5);
     Victor midRightMotor = new Victor(6);
-    
+    */
     
     //RobotDrive6 drive = new RobotDrive6(frontLeftMotor,midLeftMotor, rearLeftMotor,frontRightMotor,midRightMotor,rearRightMotor);
     RobotDrive6 drive = new RobotDrive6(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor); //For 4 motor drivetrain
@@ -139,10 +139,10 @@ public class Team177Robot extends IterativeRobot {
                
         /*Setup LiveWindow */        
         LiveWindow.addActuator("Drive", "Left Front", frontLeftMotor);
-        LiveWindow.addActuator("Drive", "Left Mid", midLeftMotor);
+        //LiveWindow.addActuator("Drive", "Left Mid", midLeftMotor);
         LiveWindow.addActuator("Drive", "Left Rear", rearLeftMotor);
         LiveWindow.addActuator("Drive", "Right Front", frontRightMotor);
-        LiveWindow.addActuator("Drive", "Right Mid", midRightMotor);
+        //LiveWindow.addActuator("Drive", "Right Mid", midRightMotor);
         LiveWindow.addActuator("Drive", "Right Rear", rearRightMotor);
         LiveWindow.addActuator("Drive", "Shifter", shifter);
         LiveWindow.addActuator("Drive", "Omni", omni);
@@ -153,7 +153,7 @@ public class Team177Robot extends IterativeRobot {
     }
     
     public void autonomousInit() {  
-        locator.Reset(); //This maybe a problem as it takes a couple of seconds for it to actually reset
+        locator.Reset(); //This maybe a problem as it takes a couple of cycles for it to actually reset
         if(auto != null) {
             auto.autoInit();
         }

@@ -8,12 +8,7 @@
 package edu.wpi.first.wpilibj.templates;
 
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -54,15 +49,15 @@ public class Team177Robot extends IterativeRobot {
     Victor frontLeftMotor = new Victor(4);
     Victor frontRightMotor = new Victor(3);
     */
-    /*2011*/
+    /*2011
     Victor rearLeftMotor = new Victor(2);
     Victor rearRightMotor = new Victor(1);
 
     Victor frontLeftMotor = new Victor(4);
     Victor frontRightMotor = new Victor(3);
-   
+   */
     
-    /*2013
+    /*2013*/
     Victor rearLeftMotor = new Victor(1);
     Victor rearRightMotor = new Victor(2);
 
@@ -71,10 +66,10 @@ public class Team177Robot extends IterativeRobot {
         
     Victor midLeftMotor = new Victor(5);
     Victor midRightMotor = new Victor(6);
-    */
     
-    //RobotDrive6 drive = new RobotDrive6(frontLeftMotor,midLeftMotor, rearLeftMotor,frontRightMotor,midRightMotor,rearRightMotor);
-    RobotDrive6 drive = new RobotDrive6(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor); //For 4 motor drivetrain
+    
+    RobotDrive6 drive = new RobotDrive6(frontLeftMotor,midLeftMotor, rearLeftMotor,frontRightMotor,midRightMotor,rearRightMotor);
+    //RobotDrive6 drive = new RobotDrive6(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor); //For 4 motor drivetrain
     
     /* Instansiate Joysticks */
     Joystick leftStick = new Joystick(1);
@@ -104,6 +99,7 @@ public class Team177Robot extends IterativeRobot {
     Compressor compressor = new Compressor(1,1);
     Solenoid shifter = new Solenoid(1);
     Solenoid omni = new Solenoid(2);
+   
        
     /* Automode Variables */
     int autoMode = 0;
@@ -139,10 +135,10 @@ public class Team177Robot extends IterativeRobot {
                
         /*Setup LiveWindow */        
         LiveWindow.addActuator("Drive", "Left Front", frontLeftMotor);
-        //LiveWindow.addActuator("Drive", "Left Mid", midLeftMotor);
+        LiveWindow.addActuator("Drive", "Left Mid", midLeftMotor);
         LiveWindow.addActuator("Drive", "Left Rear", rearLeftMotor);
         LiveWindow.addActuator("Drive", "Right Front", frontRightMotor);
-        //LiveWindow.addActuator("Drive", "Right Mid", midRightMotor);
+        LiveWindow.addActuator("Drive", "Right Mid", midRightMotor);
         LiveWindow.addActuator("Drive", "Right Rear", rearRightMotor);
         LiveWindow.addActuator("Drive", "Shifter", shifter);
         LiveWindow.addActuator("Drive", "Omni", omni);
@@ -153,7 +149,7 @@ public class Team177Robot extends IterativeRobot {
     }
     
     public void autonomousInit() {  
-        locator.Reset(); //This maybe a problem as it takes a couple of cycles for it to actually reset
+        locator.Reset(); //This maybe a problem as it takes a couple of seconds for it to actually reset
         if(auto != null) {
             auto.autoInit();
         }
@@ -185,7 +181,7 @@ public class Team177Robot extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
-                
+        
         /* Drive Code */ 
         drive.tankDrive(leftStick, rightStick); // drive with the joysticks
         shifter.set(rightStick.getRawButton(shiftButton));
@@ -202,11 +198,15 @@ public class Team177Robot extends IterativeRobot {
         shooter.SpinTest(operatorStick.getRawButton(shooterTestButton)); 
         shooter.FeedTest(operatorStick.getRawButton(feedTestButton)); 
 
-
         /* Update dashboard */
         SmartDashboard.putNumber("X", locator.GetX());
         SmartDashboard.putNumber("Y", locator.GetY());
         SmartDashboard.putNumber("Heading", locator.GetHeading());
+        
+        SmartDashboard.putNumber("Distance", vision.distance);
+        SmartDashboard.putNumber("DeltaX", vision.deltax);
+        SmartDashboard.putNumber("DeltaY", vision.deltay);
+        SmartDashboard.putNumber("Data Age", vision.timeRecieved);
     }
     
     /**

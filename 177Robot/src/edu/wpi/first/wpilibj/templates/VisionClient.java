@@ -21,12 +21,15 @@ public class VisionClient extends Thread {
             try {
                 /// Open socket
                 SocketConnection sc = (SocketConnection) Connector.open("socket://10.1.77.91:10177");
-                InputStream is = sc.openInputStream();
+                DataInputStream is = sc.openDataInputStream();
+                System.out.println("Connection To Vision System Established");
+                /*
                 byte[] buffer = new byte[1000];
                 int byteCnt;
                 int j;
 
                 /// When data is available
+                
                 while ((byteCnt = is.read(buffer)) > 0) {
                     String data[] = new String[3];
                     int start = 0;
@@ -49,10 +52,30 @@ public class VisionClient extends Thread {
                     } else {
                         System.out.println("Error Parsing Vision Packet: " + buffer);
                     }
+                }*/
+                //Make sure data is avaliable
+                while(true) {
+                    if(is.available() >= 8*3) {                       
+                        distance = is.readDouble();
+                        deltax = is.readDouble();
+                        deltay = is.readDouble();
+                        timeRecieved = Timer.getFPGATimestamp();
+                        System.out.println("Vision Data Recived: distance: "+distance +" deltax: "+deltax+" deltay: " +deltay);
+                        
+                    } else {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ex) {
+                        }
+                    }
                 }
 
             } catch (IOException e) {
                 System.out.println("VisionClient ERROR: " + e);
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
             }
         }
     }

@@ -10,14 +10,6 @@
 
 #include "CVHeader.h"
 #include "CurlUtils.h"
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <inttypes.h>
-
 
 /// Global Variables
 Mat rgbimg; Mat templ; Mat result; Mat dilateimg;
@@ -33,7 +25,6 @@ const int height_in = 18;
 /// Function Headers
 void RunServer();
 int process(int p0, int d0, int sockfd);
-template <class T> string convertNum(T number);
 double toDegrees(double angle);
 inline uint64_t endian_swap(uint64_t x);
 
@@ -112,6 +103,7 @@ int process(int p0, int d0, int sockfd) {
        }
     }
 
+        /// Check for presence of properly sized contour
 	if(!bigenough) {
 	 	cout << "No Target of Sufficient Size!" << endl;
 		return 1;

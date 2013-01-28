@@ -31,6 +31,8 @@ public class Team177Robot extends IterativeRobot {
     private static final int feedTestButton = 2; 
     private static final int shootButton = 6; 
     private static final int shooterTestButton = 8; 
+    private static final int climberButton = 1;
+    private static final int climberTestAxis = 2; //??
 
     /** Driver station Digital Channels **/
     // Automode switches are channels 1-3
@@ -84,9 +86,12 @@ public class Team177Robot extends IterativeRobot {
     
     /* Shooter 
      * 
-     * Creat Shooter on Motor 7, Encoder (6,7), Solinoid 3
+     * Creat Shooter on Motor 7, Encoder (6,7), Solinoid 4
      */
-    Shooter shooter = new Shooter(7, 6, 7, 3);
+    Shooter shooter = new Shooter(7, 6, 7, 4);
+    
+    /* Climber - on Solinoid 3 */
+    Climber climber = new Climber(this);
     
     /* Pnumatics
      * Pressure switch = DIO 1
@@ -94,7 +99,9 @@ public class Team177Robot extends IterativeRobot {
      * 
      * Shifter = Solinoid 1
      * Omni    = solinoid 2
-     * Shooter Feed = Solinoid 3
+     * PTO     = Solinoid 3
+     * Shooter Feed = Solinoid 4
+     * 
      */
     Compressor compressor = new Compressor(1,1);
     Solenoid shifter = new Solenoid(1);
@@ -197,6 +204,8 @@ public class Team177Robot extends IterativeRobot {
         /* Shooter Testing */
         shooter.SpinTest(operatorStick.getRawButton(shooterTestButton)); 
         shooter.FeedTest(operatorStick.getRawButton(feedTestButton)); 
+        
+        climber.enable(operatorStick.getRawButton(climberButton), operatorStick.getRawAxis(climberTestAxis));
 
         /* Update dashboard */
         SmartDashboard.putNumber("X", locator.GetX());

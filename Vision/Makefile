@@ -6,27 +6,21 @@
 # Calibration Variables
 P0=63
 D0=115
-THRESH=4000
+THRESH=6000.0
 
 # Other variables
 FLAGS = -O3
 
 all: visionserver
 
-visionserver: visionserver.o curlutils.o serversocket.o socket.o
-	g++ visionserver.o curlutils.o serversocket.o socket.o -o VisionServer `pkg-config --libs opencv` -lcurl
+visionserver: visionserver.o curlutils.o
+	g++ visionserver.o curlutils.o -o VisionServer `pkg-config --libs opencv` -lcurl
 
 visionserver.o: VisionServer.cpp
 	g++ -c $(FLAGS) -DP0=$(P0) -DD0=$(D0) -DTHRESH=$(THRESH) VisionServer.cpp -o visionserver.o
 
 curlutils.o: CurlUtils.cpp
 	g++ -c $(FLAGS) CurlUtils.cpp -o curlutils.o
-
-serversocket.o: ServerSocket.cpp
-	g++ -c $(FLAGS) ServerSocket.cpp -o serversocket.o
-
-socket.o: Socket.cpp
-	g++ -c $(FLAGS) Socket.cpp -o socket.o
 
 clean:
 	rm -rf *.o VisionServer

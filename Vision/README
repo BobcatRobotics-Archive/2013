@@ -1,16 +1,13 @@
 Vision Code (Requires OpenCV >= 2.0)
 
-Compile Windowed Mode (Additionally Requires GTK/Qt):
+Compile Vision Server:
 	In the "Vision" directory, execute:
-		make windowed
-	To Run:
-		./BasicVision_Windowed PATHTOSOURCEIMG PATHTOTEMPLATEIMG
+		make
+	To Run (Server):
+		./VisionServer PATHTOSOURCEIMG
+	To Run (Client):
+		telnet RPIIPADDRESS 10177
 
 
-Compile Standard Mode
-	In the "Vision" directory, execute:
-		make std
-	To Run:
-		./BasicVision PATHTOSOURCEIMG PATHTOTEPLATEIMG
 
-Last Updated: 01/11/2013 Daniel Cohen
+Last Updated: 01/20/2013 Daniel Cohen

@@ -23,7 +23,7 @@ public abstract class AutoMode {
     private static double SteerMargin = 3.0; //Margin to consider robot facing target (degrees)
     private static double DriveMargin = 2.0; //Margin to consider the robot at target (in)
     
-    private static double DriveP = 0.2;  //Preportial gain for Drive System
+    private static double DriveP = 0.1;  //Preportial gain for Drive System
     private static double DriveI = 0.0;   //Integral gain for Drive System
     private static double DriveD = 0.0;   //Derivative gain for Drive System
     private static double DriveMax = 1;   //Max Saturation value for control
@@ -98,10 +98,10 @@ public abstract class AutoMode {
         double deltaX = x - robot.locator.GetX();
         double deltaY = y - robot.locator.GetY();
         double distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-        System.out.println("DeltaX: "+deltaX+"  DeltaY: "+deltaY);
+        //System.out.println("DeltaX: "+deltaX+"  DeltaY: "+deltaY);
         //determine angle to target relative to field
         double targetHeading = Math.toDegrees(MathUtils.atan2(deltaY, deltaX));  // +/- 180 degrees
-        System.out.println("Target Heading: "+targetHeading);
+        //System.out.println("Target Heading: "+targetHeading);
         if(speed < 0) {
             //reverse heading if going backwards
             targetHeading += 180;
@@ -116,7 +116,7 @@ public abstract class AutoMode {
         
         /* Steering PID Control */
         steer = SteerPID.calculate(bearing, dT);
-        System.out.println("BEARING: "+bearing);
+        //System.out.println("BEARING: "+bearing);
         
         /* Drive PID Control */                
         if(speed == 0) {
@@ -127,8 +127,8 @@ public abstract class AutoMode {
         }        
 
         //Move the robot - Would this work better if we multiplyed by the steering PID output?
-        System.out.println("DRIVE: "+drive);
-        System.out.println("STEER: "+steer);
+        //System.out.println("DRIVE: "+drive);
+        //System.out.println("STEER: "+steer);
         robot.drive.tankDrive(drive+steer, drive-steer);
                 
         if((distance < DriveMargin) || (Math.abs(targetHeading) < SteerMargin && speed == 0 )) {
@@ -162,12 +162,13 @@ public abstract class AutoMode {
      */
     public boolean Park(double x, double y, double theta, double speed)  {
         //Control constants
-        double k1 = 1.0d;
-        double k2 = 3.0d;
-        double k3 = 2.0d;
-        double width = 28; //width of the robot in inches
+        final double k1 = 2.0d;  //This controls the drive speed
+        final double k2 = 5.0d;  //This controls the Steering athority
+        final double k3 = 2.0d;
+        final double width = 28; //width of the robot in inches
+        final double maxSpeed = 132; // in/s for robot at fulll power
 
-        double steer, drive;
+        double v, w, steer, drive, targetHeading;
         //Reinitalize if the target has changed
         if(x != lastTargetX || y != lastTargetY) {
             lastTargetX = x;
@@ -177,26 +178,41 @@ public abstract class AutoMode {
             SmartDashboard.putNumber("Target Y", y);
         }
 
-        double deltaX = x - robot.locator.GetX();
-        double deltaY = y - robot.locator.GetY();
+        double deltaX = robot.locator.GetX() - x;
+        double deltaY = robot.locator.GetY() - y;
         double distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+        System.out.println(deltaX + " " + deltaY + " " + distance);
 
         //determine angle to target relative to field
-        double targetHeading = MathUtils.atan2(deltaY, deltaX) - Math.toRadians(robot.locator.GetHeading()) + Math.PI;  // radians
+        if(deltaX == 0d && deltaY == 0d) {
+            targetHeading = 0d;
+        } else {
+            targetHeading = (MathUtils.atan2(deltaX, deltaY) - Math.toRadians(robot.locator.GetHeading())) +Math.PI;  // radians
+        }
+        if(targetHeading > Math.PI) {
+            targetHeading -= 2*Math.PI;
+        }
+        System.out.println("targetHeading: " + targetHeading);
         if(speed < 0) {
             //reverse heading if going backwards
             targetHeading -= Math.PI;
         }
 
         //calculate drive and steering in f/s and rad/s
-        double v = k1*distance*Math.cos(targetHeading);
-        double w = (k2*targetHeading) + k1*((Math.sin(targetHeading)*Math.cos(targetHeading))/targetHeading)*(targetHeading+k3*(targetHeading+theta));
+        v = k1*distance*Math.cos(targetHeading);
+        if(targetHeading == 0d) {
+            w = 0d;
+        } else {
+            w = (k2*targetHeading) + k1*((Math.sin(targetHeading)*Math.cos(targetHeading))/targetHeading)*(targetHeading+k3*(targetHeading+Math.toRadians(theta)));
+        }
 
         //Limit Control Outputs
-        double Vmax = 5.0d*speed; // f/s - TODO This assumes linear speed response... Validate this
+        double Vmax = maxSpeed*speed; // f/s - TODO This assumes linear speed response... Validate this
         double Wmax = (Vmax*2)/width; // rad/s - TODO Validate this
         double V_Vmax = Math.abs(v)/Vmax;
         double W_Wmax = Math.abs(w)/Wmax;
+        
+        System.out.println(Vmax + " " + Wmax + " " + V_Vmax + " " + W_Wmax);
         if(V_Vmax < 1 && W_Wmax < 1) {
             //Simple case, outputs not limited
             drive = v;
@@ -220,9 +236,10 @@ public abstract class AutoMode {
         }
 
         steer *= (width/2);
-
+        System.out.println("Steer: "+steer+" Drive: "+drive);
         //Move the robot - scale outputs to 0-1 range
-        robot.drive.tankDrive((drive+steer)*(1/Vmax), (drive-steer)*(1/Vmax));
+        robot.drive.tankDrive(-1.0*((drive+steer)/maxSpeed), -1.0*((drive-steer)/maxSpeed));
+        System.out.println("tankDrive: " + (-1.0*((drive+steer)/maxSpeed)) +" "+ (-1.0*((drive-steer)/maxSpeed)));
 
         if((distance < DriveMargin) || (Math.abs(Math.toDegrees(targetHeading)) < SteerMargin && speed == 0 )) {
             return true;

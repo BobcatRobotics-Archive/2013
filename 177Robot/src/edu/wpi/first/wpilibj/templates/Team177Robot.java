@@ -8,12 +8,7 @@
 package edu.wpi.first.wpilibj.templates;
 
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -31,6 +26,13 @@ public class Team177Robot extends IterativeRobot {
 
     /** Left Joystick Buttons **/
     private static final int omniButton = 3;  //Left Joystick button 3 is the omni
+    
+    /** Operator Joystick Buttons **/
+    private static final int feedTestButton = 2; 
+    private static final int shootButton = 6; 
+    private static final int shooterTestButton = 8; 
+    private static final int climberButton = 1;
+    private static final int climberTestAxis = 2; //??
 
     /** Driver station Digital Channels **/
     // Automode switches are channels 1-3
@@ -49,23 +51,27 @@ public class Team177Robot extends IterativeRobot {
     Victor frontLeftMotor = new Victor(4);
     Victor frontRightMotor = new Victor(3);
     */
-    /*2011*/
+    /*2011
     Victor rearLeftMotor = new Victor(2);
     Victor rearRightMotor = new Victor(1);
 
     Victor frontLeftMotor = new Victor(4);
     Victor frontRightMotor = new Victor(3);
+   */
+    
+    /*2013*/
+    Victor rearLeftMotor = new Victor(1);
+    Victor rearRightMotor = new Victor(2);
 
+    Victor frontLeftMotor = new Victor(3);
+    Victor frontRightMotor = new Victor(4);
         
     Victor midLeftMotor = new Victor(5);
     Victor midRightMotor = new Victor(6);
     
-    Victor shooterMotor1 = new Victor(7);
-    Victor shooterMotor2 = new Victor(8);
     
-    //RobotDrive6 drive = new RobotDrive6(frontLeftMotor,midLeftMotor, rearLeftMotor,frontRightMotor,midRightMotor,rearRightMotor);
-    RobotDrive6 drive = new RobotDrive6(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor); //For 4 motor drivetrain
-
+    RobotDrive6 drive = new RobotDrive6(frontLeftMotor,midLeftMotor, rearLeftMotor,frontRightMotor,midRightMotor,rearRightMotor);
+    //RobotDrive6 drive = new RobotDrive6(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor); //For 4 motor drivetrain
     
     /* Instansiate Joysticks */
     Joystick leftStick = new Joystick(1);
@@ -75,8 +81,19 @@ public class Team177Robot extends IterativeRobot {
     /* Instansiate Locator - Scaling set in contructor*/
     Locator locator = new Locator(2,3,4,5,1); /*Left Encoder A,B, Right Encoder A,B, Gyro*/
 
-    /* Instnsiate VisionListener to get data from vision subsystem */
-    VisionListener vision = new VisionListener();
+    /* Instnsiate VisionClient to get data from vision subsystem */
+    VisionClient vision = new VisionClient();
+    
+    /* Shooter 
+     * 
+     * Create Shooter1 on Motor 7, Encoder (6,7)
+     *        Shooter1 on Motor 8, Encoder (8,9)
+     *        Feeder On Solinoid 4
+     */
+    Shooter shooter = new Shooter(7, 6, 7, 8, 8, 9, 4);
+    
+    /* Climber - on Solinoid 3 */
+    Climber climber = new Climber(this);
     
     /* Pnumatics
      * Pressure switch = DIO 1
@@ -84,17 +101,22 @@ public class Team177Robot extends IterativeRobot {
      * 
      * Shifter = Solinoid 1
      * Omni    = solinoid 2
+     * PTO     = Solinoid 3
+     * Shooter Feed = Solinoid 4
+     * 
      */
     Compressor compressor = new Compressor(1,1);
     Solenoid shifter = new Solenoid(1);
     Solenoid omni = new Solenoid(2);
-    
-    Solenoid shooterFeed = new Solenoid(3);
-            
+   
+       
     /* Automode Variables */
     int autoMode = 0;
     float autoDelay = 0;
     AutoMode auto;
+    
+    /* State Variables */
+    boolean lastFireButton;
 
     
     /**
@@ -114,13 +136,13 @@ public class Team177Robot extends IterativeRobot {
         locator.setDistancePerPulse(0.095874f, 0.095874f);  //2011
         locator.start();
 
+        //Start Vision, Connect to RPI
         vision.start();
+        
+        //Start Shooter
+        shooter.start();
                
-        /*Setup LiveWindow */
-        LiveWindow.addActuator("Shooter Testing", "Shooter 1", shooterMotor1);
-        LiveWindow.addActuator("Shooter Testing", "Shooter 2", shooterMotor2);
-        LiveWindow.addActuator("Shooter Testing", "Shooter Feed", shooterFeed);
-         
+        /*Setup LiveWindow */        
         LiveWindow.addActuator("Drive", "Left Front", frontLeftMotor);
         LiveWindow.addActuator("Drive", "Left Mid", midLeftMotor);
         LiveWindow.addActuator("Drive", "Left Rear", rearLeftMotor);
@@ -174,12 +196,28 @@ public class Team177Robot extends IterativeRobot {
         shifter.set(rightStick.getRawButton(shiftButton));
         omni.set(leftStick.getRawButton(omniButton));
 
-        shooterFeed.set(!m_ds.getDigitalIn(missleSwitchChannel));
+        /* Shooter */
+        /* Missle switch is just for inital testing, can be removed if needed elsewhere */
+        if(!lastFireButton && (!m_ds.getDigitalIn(missleSwitchChannel) || operatorStick.getRawButton(shootButton))) {
+            shooter.Fire();
+        }
+        lastFireButton = (!m_ds.getDigitalIn(missleSwitchChannel) || operatorStick.getRawButton(shootButton));
+        
+        /* Shooter Testing */
+        shooter.SpinTest(operatorStick.getRawButton(shooterTestButton)); 
+        shooter.FeedTest(operatorStick.getRawButton(feedTestButton)); 
+        
+        climber.enable(operatorStick.getRawButton(climberButton), operatorStick.getRawAxis(climberTestAxis));
 
         /* Update dashboard */
         SmartDashboard.putNumber("X", locator.GetX());
         SmartDashboard.putNumber("Y", locator.GetY());
         SmartDashboard.putNumber("Heading", locator.GetHeading());
+        
+        SmartDashboard.putNumber("Distance", vision.distance);
+        SmartDashboard.putNumber("DeltaX", vision.deltax);
+        SmartDashboard.putNumber("DeltaY", vision.deltay);
+        SmartDashboard.putNumber("Data Age", vision.timeRecieved);
     }
     
     /**
@@ -195,7 +233,7 @@ public class Team177Robot extends IterativeRobot {
     
     public void disabledPeriodic() {
         try {
-            int new_autoMode = (m_ds.getDigitalIn(3)?0:4) + (m_ds.getDigitalIn(2)?0:2) + (m_ds.getDigitalIn(1)?0:1);
+            int new_autoMode = (m_ds.getDigitalIn(3)?0:1) + (m_ds.getDigitalIn(2)?0:2) + (m_ds.getDigitalIn(1)?0:4);
             if (new_autoMode != autoMode) {
                 //Selected auto mode has changed, update references
                 autoMode = new_autoMode;

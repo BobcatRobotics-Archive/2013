@@ -21,7 +21,7 @@ public class AutoModeParkTest extends AutoMode {
         switch(StepCount) {
             case 0:
                 //Drive Forward 3 feet, left 1
-                if(Park(36,-1,0,0.5)) {
+                if(Park(36,-1,0,1.0)) {
                     StepCount++;
                 }
                 break;

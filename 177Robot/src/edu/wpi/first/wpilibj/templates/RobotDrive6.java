@@ -126,7 +126,7 @@ public class RobotDrive6 implements MotorSafety, IUtility {
         m_sensitivity = kDefaultSensitivity;
         m_maxOutput = kDefaultMaxOutput;
         for (int i = 0; i < kMaxNumberOfMotors; i++) {
-            m_invertedMotors[i] = 1;
+            m_invertedMotors[i] = -1;
         }
         m_allocatedSpeedControllers = false;
 		setupMotorSafety();
@@ -158,7 +158,7 @@ public class RobotDrive6 implements MotorSafety, IUtility {
         m_sensitivity = kDefaultSensitivity;
         m_maxOutput = kDefaultMaxOutput;
         for (int i = 0; i < kMaxNumberOfMotors; i++) {
-            m_invertedMotors[i] = 1;
+            m_invertedMotors[i] = -1;   //Set everything to default inverted DAS 2/4/2013
         }
         m_allocatedSpeedControllers = false;
 	setupMotorSafety();

@@ -28,11 +28,14 @@ public class Team177Robot extends IterativeRobot {
     private static final int omniButton = 3;  //Left Joystick button 3 is the omni
     
     /** Operator Joystick Buttons **/
-    private static final int feedTestButton = 2; 
+    private static final int feedTestButton = 4; 
     private static final int shootButton = 6; 
     private static final int shooterTestButton = 8; 
-    private static final int climberButton = 1;
+    private static final int climberButton = 2;
+    private static final int climberDeployToggle = 5;
     private static final int climberTestAxis = 2; //??
+    private static final int climberPTOTest = 1;
+    private static final int shooterElevateAxis = 6; //Up/down on digital pad
 
     /** Driver station Digital Channels **/
     // Automode switches are channels 1-3
@@ -42,6 +45,48 @@ public class Team177Robot extends IterativeRobot {
     private static final float autoDelayMultiplier = 2.0f; //this is multiplied by DS analog input, 2 gives you the range 0-19 seconds
     
     /** IO Definitions **/
+    /* Motors */
+    private static final int MotorDriveRL = 1;
+    private static final int MotorDriveRR = 2;
+    private static final int MotorDriveFL = 3;
+    private static final int MotorDriveFR = 4;
+    private static final int MotorDriveML = 5;
+    private static final int MotorDriveMR = 6;    
+    private static final int MotorShooter1 = 7;
+    private static final int MotorShooter2 = 8;
+    
+    /* Analog Inputs */
+    private static final int AIOGyro = 1;
+    
+    /* Digital IO */
+    private static final int DIOPressureSwitch = 1;
+    private static final int DIOLeftEncoderA = 2;
+    private static final int DIOLeftEncoderB = 3;    
+    private static final int DIORightEncoderA = 4;
+    private static final int DIORightEncoderB = 5;    
+    private static final int DIOshooterEncoder1A = 6;
+    private static final int DIOshooterEncoder1B = 7;    
+    private static final int DIOshooterEncoder2A = 8;
+    private static final int DIOshooterEncoder2B = 9;
+    private static final int DIOclimberLowerSwitch = 10;
+    private static final int DIOclimberUpperSwitch = 11;
+    
+    /* Solenoids - Module 1 */
+    private static final int SolenoidDriveShifter = 1;
+    private static final int SolenoidClimberPTO = 2;
+    private static final int SolenoidDriveOmni = 3;
+    private static final int SolenoidShooterPin = 4;
+    private static final int SolenoidShooterFeed = 5;
+    private static final int SolenoidShooterElevation = 6;
+    private static final int SolenoidPickupDeploy = 7;
+    
+    /* Solenoids - Module 2 */
+    private static final int SolenoidClimberDeployOut = 1;  //two way solenoid
+    private static final int SolenoidClimberDeployIn = 2;
+    private static final int SolenoidClimberBrake = 7;  
+    
+    /* Relays */
+    private static final int RelayCompressor = 1;
     
     /* Instansiate Speed Controlers and Drive */    
     /*2012
@@ -60,15 +105,14 @@ public class Team177Robot extends IterativeRobot {
    */
     
     /*2013*/
-    Victor rearLeftMotor = new Victor(1);
-    Victor rearRightMotor = new Victor(2);
+    Victor rearLeftMotor = new Victor(MotorDriveRL);
+    Victor rearRightMotor = new Victor(MotorDriveRR);
 
-    Victor frontLeftMotor = new Victor(3);
-    Victor frontRightMotor = new Victor(4);
+    Victor frontLeftMotor = new Victor(MotorDriveFL);
+    Victor frontRightMotor = new Victor(MotorDriveFR);
         
-    Victor midLeftMotor = new Victor(5);
-    Victor midRightMotor = new Victor(6);
-    
+    Victor midLeftMotor = new Victor(MotorDriveML);
+    Victor midRightMotor = new Victor(MotorDriveMR);                
     
     RobotDrive6 drive = new RobotDrive6(frontLeftMotor,midLeftMotor, rearLeftMotor,frontRightMotor,midRightMotor,rearRightMotor);
     //RobotDrive6 drive = new RobotDrive6(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor); //For 4 motor drivetrain
@@ -79,7 +123,8 @@ public class Team177Robot extends IterativeRobot {
     Joystick operatorStick = new Joystick(3);
     
     /* Instansiate Locator - Scaling set in contructor*/
-    Locator locator = new Locator(2,3,4,5,1); /*Left Encoder A,B, Right Encoder A,B, Gyro*/
+    /*Left Encoder A,B, Right Encoder A,B, Gyro*/
+    Locator locator = new Locator(DIOLeftEncoderA,DIOLeftEncoderB,DIORightEncoderA,DIORightEncoderB,AIOGyro); 
 
     /* Instnsiate VisionClient to get data from vision subsystem */
     VisionClient vision = new VisionClient();
@@ -88,36 +133,42 @@ public class Team177Robot extends IterativeRobot {
      * 
      * Create Shooter1 on Motor 7, Encoder (6,7)
      *        Shooter1 on Motor 8, Encoder (8,9)
-     *        Feeder On Solinoid 4
+     *        Pin on Solenoid 4
+     *        Feeder On Solenoid 5
+     *        Elevation on Solenoid 6
      */
-    Shooter shooter = new Shooter(7, 6, 7, 8, 8, 9, 4);
     
-    /* Climber - on Solinoid 3 */
-    Climber climber = new Climber(this);
+    Shooter shooter = new Shooter(MotorShooter1, DIOshooterEncoder1A, DIOshooterEncoder1B, 
+                        MotorShooter2, DIOshooterEncoder2A, DIOshooterEncoder2B, 
+                        SolenoidShooterPin, SolenoidShooterFeed,SolenoidShooterElevation);
+    
+    /* Climber - on Solenoid 3 */
+    Climber climber = new Climber(this, DIOclimberLowerSwitch, DIOclimberUpperSwitch,
+                                   SolenoidClimberPTO, SolenoidClimberBrake, 
+                                   SolenoidClimberDeployOut, SolenoidClimberDeployIn);
     
     /* Pnumatics
      * Pressure switch = DIO 1
      * Compressor = Relay 1
      * 
-     * Shifter = Solinoid 1
+     * Shifter = Solenoid 1
      * Omni    = solinoid 2
-     * PTO     = Solinoid 3
-     * Shooter Feed = Solinoid 4
+     * PTO     = Solenoid 3
+     * Shooter Feed = Solenoid 4
      * 
      */
-    Compressor compressor = new Compressor(1,1);
-    Solenoid shifter = new Solenoid(1);
-    Solenoid omni = new Solenoid(2);
-   
-       
+    Compressor compressor = new Compressor(DIOPressureSwitch,RelayCompressor);  
+    Solenoid shifter = new Solenoid(SolenoidDriveShifter);
+    Solenoid omni = new Solenoid(SolenoidDriveOmni);
+          
     /* Automode Variables */
     int autoMode = 0;
     float autoDelay = 0;
     AutoMode auto;
     
     /* State Variables */
-    boolean lastFireButton;
-
+    boolean lastFireButton = false;
+    boolean lastDeployButton = false;
     
     /**
      * This function is run when the robot is first started up and should be
@@ -141,6 +192,9 @@ public class Team177Robot extends IterativeRobot {
         
         //Start Shooter
         shooter.start();
+        
+        //Start Climber
+        climber.start();
                
         /*Setup LiveWindow */        
         LiveWindow.addActuator("Drive", "Left Front", frontLeftMotor);
@@ -151,6 +205,27 @@ public class Team177Robot extends IterativeRobot {
         LiveWindow.addActuator("Drive", "Right Rear", rearRightMotor);
         LiveWindow.addActuator("Drive", "Shifter", shifter);
         LiveWindow.addActuator("Drive", "Omni", omni);
+        
+        //This violates encapsulation, but doesn't seam to work otherwise
+        LiveWindow.addSensor("Shooter", "Encoder 1", shooter.shooterEncoder1);
+        LiveWindow.addSensor("Shooter", "Encoder 2", shooter.shooterEncoder2);
+        LiveWindow.addActuator("Shooter", "Feed", shooter.shooterFeed);
+        LiveWindow.addActuator("Shooter", "Pin", shooter.shooterPin);
+        LiveWindow.addActuator("Shooter", "Elevation", shooter.shooterElevation);
+        LiveWindow.addActuator("Shooter", "Motor 1", shooter.shooterMotor1.shooterMotor);
+        LiveWindow.addActuator("Shooter", "Motor 2", shooter.shooterMotor2.shooterMotor);
+        
+        LiveWindow.addActuator("Climmber", "PTO", climber.pto);
+        LiveWindow.addActuator("Climmber", "Brake", climber.brake);
+        LiveWindow.addActuator("Climmber", "DeployIn", climber.deployIn);
+        LiveWindow.addActuator("Climmber", "DeployOut", climber.deployOut);
+        LiveWindow.addSensor("Climber", "Lower Limit", climber.lowerlimit);
+        LiveWindow.addSensor("Climber", "Upper Limit", climber.upperlimit);
+        
+        LiveWindow.addSensor("Locater", "left Encoder", locator.leftEncoder);
+        LiveWindow.addSensor("Locater", "right Encoder", locator.rightEncoder);
+        LiveWindow.addSensor("Locater", "Gyro", locator.headingGyro);
+        
 
         /* Turn on watchdog */
         getWatchdog().setEnabled(true);
@@ -192,11 +267,36 @@ public class Team177Robot extends IterativeRobot {
     public void teleopPeriodic() {
         
         /* Drive Code */ 
-        drive.tankDrive(leftStick, rightStick); // drive with the joysticks
-        shifter.set(rightStick.getRawButton(shiftButton));
+        if(!operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest)) {
+            //Disable the Drivers controls when the climber is enabled            
+            climber.setPTO(false);
+            drive.tankDrive(leftStick, rightStick); // drive with the joysticks                        
+            shifter.set(rightStick.getRawButton(shiftButton));
+        } else if (operatorStick.getRawButton(climberPTOTest)) {
+            //Climber testing
+            climber.setPTO(true);
+            shifter.set(false);
+            climber.test(operatorStick.getRawAxis(climberTestAxis));
+        } else {
+            /* Climber*/
+            shifter.set(false);            
+        }
+        climber.enable(operatorStick.getRawButton(climberButton));
+        
+        /* Climber Deploy Toggle*/
+        if(!lastDeployButton && operatorStick.getRawButton(climberDeployToggle)) {
+            climber.toggleDeploy();
+        }
+        lastDeployButton = operatorStick.getRawButton(climberDeployToggle);               
+        
         omni.set(leftStick.getRawButton(omniButton));
 
         /* Shooter */
+        if(operatorStick.getRawAxis(shooterElevateAxis) > 0) {
+            shooter.SetElevated(true); 
+        } else if(operatorStick.getRawAxis(shooterElevateAxis) < 0) {
+            shooter.SetElevated(false); 
+        }
         /* Missle switch is just for inital testing, can be removed if needed elsewhere */
         if(!lastFireButton && (!m_ds.getDigitalIn(missleSwitchChannel) || operatorStick.getRawButton(shootButton))) {
             shooter.Fire();
@@ -206,9 +306,7 @@ public class Team177Robot extends IterativeRobot {
         /* Shooter Testing */
         shooter.SpinTest(operatorStick.getRawButton(shooterTestButton)); 
         shooter.FeedTest(operatorStick.getRawButton(feedTestButton)); 
-        
-        climber.enable(operatorStick.getRawButton(climberButton), operatorStick.getRawAxis(climberTestAxis));
-
+                                
         /* Update dashboard */
         SmartDashboard.putNumber("X", locator.GetX());
         SmartDashboard.putNumber("Y", locator.GetY());

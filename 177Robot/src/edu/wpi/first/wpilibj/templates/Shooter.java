@@ -47,6 +47,7 @@ public class Shooter extends Thread {
     final Solenoid shooterPin;
     final Solenoid shooterElevation;
     
+    private int shotsRemaining = 0;
     private int shooterMode;
     private boolean elevated = false;
     private boolean spinTest = false;
@@ -130,10 +131,16 @@ public class Shooter extends Thread {
                         shootTime = Timer.getFPGATimestamp();
                     } else if ((Timer.getFPGATimestamp() - shootTime) > feedTime+pinTime) {
                         /* Delay to give shooter time to complete the shot */
-                        //TODO - Add logic to deal with multiple frizbees
                         feed = false;
                         pin = false;
-                        shooterMode = STANDBY;
+                        if(shotsRemaining > 0) {
+                            shotsRemaining--;
+                            shooterMode = SPINUP;
+                            shootTime = Timer.getFPGATimestamp(); //start timeout timer
+                            //may need delay here.
+                        } else {
+                             shooterMode = STANDBY;
+                        }
                     } else if ((Timer.getFPGATimestamp() - shootTime) > pinTime) {
                         feed = true;
                     }                                                 
@@ -178,6 +185,13 @@ public class Shooter extends Thread {
  
     public synchronized void Fire() {
         if(shooterMode == STANDBY) {
+            shooterMode = SPINUP;
+        }
+    } 
+    
+    public synchronized void Fire(int cnt) {
+        shotsRemaining = cnt;
+        if(shooterMode == STANDBY) {        
             shooterMode = SPINUP;
         }
     } 

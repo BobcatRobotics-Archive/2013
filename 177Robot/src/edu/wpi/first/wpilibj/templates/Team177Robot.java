@@ -64,10 +64,10 @@ public class Team177Robot extends IterativeRobot {
     private static final int DIOLeftEncoderB = 3;    
     private static final int DIORightEncoderA = 4;
     private static final int DIORightEncoderB = 5;    
-    private static final int DIOshooterEncoder1A = 6;
-    private static final int DIOshooterEncoder1B = 7;    
-    private static final int DIOshooterEncoder2A = 8;
-    private static final int DIOshooterEncoder2B = 9;
+    private static final int DIOshooterEncoder1A = 10;//6;
+    private static final int DIOshooterEncoder1B = 11; //7;    
+    private static final int DIOshooterEncoder2A = 12;//8;
+    private static final int DIOshooterEncoder2B = 13;//9;
     private static final int DIOclimberLowerSwitch = 10;
     private static final int DIOclimberUpperSwitch = 11;
     
@@ -75,7 +75,7 @@ public class Team177Robot extends IterativeRobot {
     private static final int SolenoidDriveShifter = 1;
     private static final int SolenoidClimberPTO = 2;
     private static final int SolenoidDriveOmni = 3;
-    private static final int SolenoidShooterPin = 4;
+    private static final int SolenoidShooterPin = 4;   
     private static final int SolenoidShooterFeed = 5;
     private static final int SolenoidShooterElevation = 6;
     private static final int SolenoidPickupDeploy = 7;

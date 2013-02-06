@@ -21,6 +21,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Team177Robot extends IterativeRobot {
     
+    /** Constants to disable subsystems to facilitate testing */
+    private static final boolean enableClimber = true;
+    private static final boolean enableShooter = true;
+    private static final boolean enableVision  = true;
+    
     /** Right Joystick Buttons **/
     private static final int shiftButton = 3; //Right Joystick button 3 is the shifter
 
@@ -127,36 +132,15 @@ public class Team177Robot extends IterativeRobot {
     Locator locator = new Locator(DIOLeftEncoderA,DIOLeftEncoderB,DIORightEncoderA,DIORightEncoderB,AIOGyro); 
 
     /* Instnsiate VisionClient to get data from vision subsystem */
-    VisionClient vision = new VisionClient();
+    VisionClient vision;
     
-    /* Shooter 
-     * 
-     * Create Shooter1 on Motor 7, Encoder (6,7)
-     *        Shooter1 on Motor 8, Encoder (8,9)
-     *        Pin on Solenoid 4
-     *        Feeder On Solenoid 5
-     *        Elevation on Solenoid 6
-     */
+    /* Shooter */
+    Shooter shooter;
     
-    Shooter shooter = new Shooter(MotorShooter1, DIOshooterEncoder1A, DIOshooterEncoder1B, 
-                        MotorShooter2, DIOshooterEncoder2A, DIOshooterEncoder2B, 
-                        SolenoidShooterPin, SolenoidShooterFeed,SolenoidShooterElevation);
+    /* Climber */
+    Climber climber;
     
-    /* Climber - on Solenoid 3 */
-    Climber climber = new Climber(this, DIOclimberLowerSwitch, DIOclimberUpperSwitch,
-                                   SolenoidClimberPTO, SolenoidClimberBrake, 
-                                   SolenoidClimberDeployOut, SolenoidClimberDeployIn);
-    
-    /* Pnumatics
-     * Pressure switch = DIO 1
-     * Compressor = Relay 1
-     * 
-     * Shifter = Solenoid 1
-     * Omni    = solinoid 2
-     * PTO     = Solenoid 3
-     * Shooter Feed = Solenoid 4
-     * 
-     */
+    /* Pnumatics */
     Compressor compressor = new Compressor(DIOPressureSwitch,RelayCompressor);  
     Solenoid shifter = new Solenoid(SolenoidDriveShifter);
     Solenoid omni = new Solenoid(SolenoidDriveOmni);
@@ -176,6 +160,45 @@ public class Team177Robot extends IterativeRobot {
      */
     public void robotInit() {
         
+        if(enableShooter) {
+            shooter = new Shooter(MotorShooter1, DIOshooterEncoder1A, DIOshooterEncoder1B, 
+                        MotorShooter2, DIOshooterEncoder2A, DIOshooterEncoder2B, 
+                        SolenoidShooterPin, SolenoidShooterFeed,SolenoidShooterElevation);
+            
+            LiveWindow.addSensor("Shooter", "Encoder 1", shooter.shooterEncoder1);
+            LiveWindow.addSensor("Shooter", "Encoder 2", shooter.shooterEncoder2);
+            LiveWindow.addActuator("Shooter", "Feed", shooter.shooterFeed);
+            LiveWindow.addActuator("Shooter", "Pin", shooter.shooterPin);
+            LiveWindow.addActuator("Shooter", "Elevation", shooter.shooterElevation);
+            LiveWindow.addActuator("Shooter", "Motor 1", shooter.shooterMotor1.shooterMotor);
+            LiveWindow.addActuator("Shooter", "Motor 2", shooter.shooterMotor2.shooterMotor);
+            
+            //Start Shooter
+            shooter.start();
+        }
+        
+        if(enableClimber) {
+            climber = new Climber(this, DIOclimberLowerSwitch, DIOclimberUpperSwitch,
+                                   SolenoidClimberPTO, SolenoidClimberBrake, 
+                                   SolenoidClimberDeployOut, SolenoidClimberDeployIn);
+            
+            LiveWindow.addActuator("Climmber", "PTO", climber.pto);
+            LiveWindow.addActuator("Climmber", "Brake", climber.brake);
+            LiveWindow.addActuator("Climmber", "DeployIn", climber.deployIn);
+            LiveWindow.addActuator("Climmber", "DeployOut", climber.deployOut);
+            LiveWindow.addSensor("Climber", "Lower Limit", climber.lowerlimit);
+            LiveWindow.addSensor("Climber", "Upper Limit", climber.upperlimit);
+            
+            //Start Climber
+            climber.start();
+        }
+        
+        if(enableVision) {
+            vision = new VisionClient();
+            //Start Vision, Connect to RPi
+            vision.start();
+        }
+        
         /* Start Compressor - logic handled by Compressor class */
         compressor.start();
         
@@ -186,16 +209,11 @@ public class Team177Robot extends IterativeRobot {
         //locator.setDistancePerPulse(0.15574f, 0.15748f);  //2012
         locator.setDistancePerPulse(0.095874f, 0.095874f);  //2011
         locator.start();
-
-        //Start Vision, Connect to RPI
-        vision.start();
-        
-        //Start Shooter
-        shooter.start();
-        
-        //Start Climber
-        climber.start();
-               
+    
+        LiveWindow.addSensor("Locater", "left Encoder", locator.leftEncoder);
+        LiveWindow.addSensor("Locater", "right Encoder", locator.rightEncoder);
+        LiveWindow.addSensor("Locater", "Gyro", locator.headingGyro);
+            
         /*Setup LiveWindow */        
         LiveWindow.addActuator("Drive", "Left Front", frontLeftMotor);
         LiveWindow.addActuator("Drive", "Left Mid", midLeftMotor);
@@ -205,28 +223,7 @@ public class Team177Robot extends IterativeRobot {
         LiveWindow.addActuator("Drive", "Right Rear", rearRightMotor);
         LiveWindow.addActuator("Drive", "Shifter", shifter);
         LiveWindow.addActuator("Drive", "Omni", omni);
-        
-        //This violates encapsulation, but doesn't seam to work otherwise
-        LiveWindow.addSensor("Shooter", "Encoder 1", shooter.shooterEncoder1);
-        LiveWindow.addSensor("Shooter", "Encoder 2", shooter.shooterEncoder2);
-        LiveWindow.addActuator("Shooter", "Feed", shooter.shooterFeed);
-        LiveWindow.addActuator("Shooter", "Pin", shooter.shooterPin);
-        LiveWindow.addActuator("Shooter", "Elevation", shooter.shooterElevation);
-        LiveWindow.addActuator("Shooter", "Motor 1", shooter.shooterMotor1.shooterMotor);
-        LiveWindow.addActuator("Shooter", "Motor 2", shooter.shooterMotor2.shooterMotor);
-        
-        LiveWindow.addActuator("Climmber", "PTO", climber.pto);
-        LiveWindow.addActuator("Climmber", "Brake", climber.brake);
-        LiveWindow.addActuator("Climmber", "DeployIn", climber.deployIn);
-        LiveWindow.addActuator("Climmber", "DeployOut", climber.deployOut);
-        LiveWindow.addSensor("Climber", "Lower Limit", climber.lowerlimit);
-        LiveWindow.addSensor("Climber", "Upper Limit", climber.upperlimit);
-        
-        LiveWindow.addSensor("Locater", "left Encoder", locator.leftEncoder);
-        LiveWindow.addSensor("Locater", "right Encoder", locator.rightEncoder);
-        LiveWindow.addSensor("Locater", "Gyro", locator.headingGyro);
-        
-
+                        
         /* Turn on watchdog */
         getWatchdog().setEnabled(true);
 
@@ -266,56 +263,70 @@ public class Team177Robot extends IterativeRobot {
      */
     public void teleopPeriodic() {
         
-        /* Drive Code */ 
-        if(!operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest)) {
-            //Disable the Drivers controls when the climber is enabled            
-            climber.setPTO(false);
-            drive.tankDrive(leftStick, rightStick); // drive with the joysticks                        
-            shifter.set(rightStick.getRawButton(shiftButton));
-        } else if (operatorStick.getRawButton(climberPTOTest)) {
-            //Climber testing
-            climber.setPTO(true);
-            shifter.set(false);
-            climber.test(operatorStick.getRawAxis(climberTestAxis));
+        /* Climber/Drive Code */ 
+        if(enableClimber) {
+            if(!operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest)) {
+                // Regular Driving
+                climber.enable(false);
+                climber.setPTO(false);
+                drive.tankDrive(leftStick, rightStick); // drive with the joysticks                        
+                shifter.set(rightStick.getRawButton(shiftButton));
+            } else if (operatorStick.getRawButton(climberPTOTest)) {
+                // Climber testing
+                climber.enable(false);
+                climber.setPTO(true);
+                shifter.set(false);
+                climber.test(operatorStick.getRawAxis(climberTestAxis));                
+            } else {
+                // Climber Button
+                shifter.set(false);            
+                climber.enable(true);
+            }            
+            
+            /* Climber Deploy Toggle*/
+            if(!lastDeployButton && operatorStick.getRawButton(climberDeployToggle)) {
+                climber.toggleDeploy();
+            }
+            
+            lastDeployButton = operatorStick.getRawButton(climberDeployToggle);     
+            
         } else {
-            /* Climber*/
-            shifter.set(false);            
+            drive.tankDrive(leftStick, rightStick); // drive with the joysticks 
+            shifter.set(rightStick.getRawButton(shiftButton));
         }
-        climber.enable(operatorStick.getRawButton(climberButton));
-        
-        /* Climber Deploy Toggle*/
-        if(!lastDeployButton && operatorStick.getRawButton(climberDeployToggle)) {
-            climber.toggleDeploy();
-        }
-        lastDeployButton = operatorStick.getRawButton(climberDeployToggle);               
-        
+                       
         omni.set(leftStick.getRawButton(omniButton));
 
-        /* Shooter */
-        if(operatorStick.getRawAxis(shooterElevateAxis) > 0) {
-            shooter.SetElevated(true); 
-        } else if(operatorStick.getRawAxis(shooterElevateAxis) < 0) {
-            shooter.SetElevated(false); 
-        }
-        /* Missle switch is just for inital testing, can be removed if needed elsewhere */
-        if(!lastFireButton && (!m_ds.getDigitalIn(missleSwitchChannel) || operatorStick.getRawButton(shootButton))) {
-            shooter.Fire();
-        }
-        lastFireButton = (!m_ds.getDigitalIn(missleSwitchChannel) || operatorStick.getRawButton(shootButton));
+        if(enableShooter) {
+            /* Shooter */
+            if(operatorStick.getRawAxis(shooterElevateAxis) > 0) {
+                shooter.SetElevated(true); 
+            } else if(operatorStick.getRawAxis(shooterElevateAxis) < 0) {
+                shooter.SetElevated(false); 
+            }
         
-        /* Shooter Testing */
-        shooter.SpinTest(operatorStick.getRawButton(shooterTestButton)); 
-        shooter.FeedTest(operatorStick.getRawButton(feedTestButton)); 
+            /* Missle switch is just for inital testing, can be removed if needed elsewhere */
+            if(!lastFireButton && (!m_ds.getDigitalIn(missleSwitchChannel) || operatorStick.getRawButton(shootButton))) {
+                shooter.Fire();
+            }
+            lastFireButton = (!m_ds.getDigitalIn(missleSwitchChannel) || operatorStick.getRawButton(shootButton));
+        
+            /* Shooter Testing */
+            shooter.SpinTest(operatorStick.getRawButton(shooterTestButton)); 
+            shooter.FeedTest(operatorStick.getRawButton(feedTestButton)); 
+        }
                                 
         /* Update dashboard */
         SmartDashboard.putNumber("X", locator.GetX());
         SmartDashboard.putNumber("Y", locator.GetY());
         SmartDashboard.putNumber("Heading", locator.GetHeading());
         
-        SmartDashboard.putNumber("Distance", vision.distance);
-        SmartDashboard.putNumber("DeltaX", vision.deltax);
-        SmartDashboard.putNumber("DeltaY", vision.deltay);
-        SmartDashboard.putNumber("Data Age", vision.timeRecieved);
+        if(enableVision) {
+            SmartDashboard.putNumber("Distance", vision.distance);
+            SmartDashboard.putNumber("DeltaX", vision.deltax);
+            SmartDashboard.putNumber("DeltaY", vision.deltay);
+            SmartDashboard.putNumber("Data Age", vision.timeRecieved);
+        }
     }
     
     /**

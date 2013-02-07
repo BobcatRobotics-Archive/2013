@@ -330,10 +330,10 @@ public class Team177Robot extends IterativeRobot {
                 autoMode = new_autoMode;
                 switch (autoMode) {
                     case 1:
-                        auto = new AutoModeBasicDriveTest(this);
+                        auto = new AutoModeThroughCenter(this);
                         break;
                     case 2:
-                        auto = new AutoModeDriveToTest(this);
+                        auto = new AutoMode5DiscThroughCenter(this);
                         break;
                     case 3:
                         auto = new AutoModeParkTest(this);

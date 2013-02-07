@@ -22,42 +22,13 @@ public class AutoModeThroughCenter extends AutoMode
     {
 	switch(stepCount)
 	{
-	    case 0: case 1: case 2:
+	    case 0: 
 		//Shoot 3 times
-		if(robot.shooter.isDone())
-		{
-		    robot.shooter.Fire();
-		    stepCount++;
-		}
-		break;
-	    case 3:
-		//Drive to center line
-		if(DriveTo(94.2, 0, 0.5))
-		{
-		    stepCount++;
-		}
-		break;
-	    case 4:
-		//Pickup frisbees
+		robot.shooter.Fire(3);
 		stepCount++;
-		break;
-	    case 5:
-		//Drive back to original position
-		if (DriveTo(0, 0, 0.5))
-		{
-		    stepCount++;
-		}
-		break;
-	    case 6: case 7:
-		if(robot.shooter.isDone())
-		{
-		    robot.shooter.Fire();
-		    stepCount++;
-		}
 		break;
 	    default:
 		robot.drive.tankDrive(0.0,0.0);
-		System.out.println("Finished");
 	}
     }
 

@@ -182,6 +182,11 @@ public class Shooter extends Thread {
             
         }      
     }
+    
+    public synchronized boolean isDone()
+    {
+    return shooterMode == STANDBY;
+    }
  
     public synchronized void Fire() {
         if(shooterMode == STANDBY) {

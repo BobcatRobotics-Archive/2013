@@ -6,6 +6,7 @@ package edu.wpi.first.wpilibj.templates;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -26,16 +27,16 @@ public class Climber extends Thread {
     private boolean enabled = false;
 
     /* Limit Switches */
-    DigitalInput lowerlimit;
-    DigitalInput upperlimit;
+    private DigitalInput lowerlimit;
+    private DigitalInput upperlimit;
     
     /* PTO */
-    Solenoid pto;
+    private Solenoid pto;
     /* Mechanical Break */
-    Solenoid brake;
+    private Solenoid brake;
     /* Climber Deploy - two way solinoid */
-    Solenoid deployIn;
-    Solenoid deployOut;
+    private Solenoid deployIn;
+    private Solenoid deployOut;
     
     Climber(Team177Robot robot, int lowerLimitSwitch, int upperLimitSwitch, int PTOChannel, int BrakeChannel, int DeployOutChannel, int DeployInChannel) {
         this.robot = robot;
@@ -43,9 +44,16 @@ public class Climber extends Thread {
         lowerlimit = new DigitalInput(lowerLimitSwitch);
         upperlimit = new DigitalInput(upperLimitSwitch);
         pto = new Solenoid(PTOChannel);
-        brake = new Solenoid(2,BrakeChannel);
-        deployOut = new Solenoid(2,DeployOutChannel);
-        deployIn = new Solenoid(2,DeployInChannel);            
+        brake = new Solenoid(2, BrakeChannel);
+        deployOut = new Solenoid(2, DeployOutChannel);
+        deployIn = new Solenoid(2, DeployInChannel);
+
+        LiveWindow.addActuator("Climmber", "PTO", pto);
+        LiveWindow.addActuator("Climmber", "Brake", brake);
+        LiveWindow.addActuator("Climmber", "DeployIn", deployIn);
+        LiveWindow.addActuator("Climmber", "DeployOut", deployOut);
+        LiveWindow.addSensor("Climber", "Lower Limit", lowerlimit);
+        LiveWindow.addSensor("Climber", "Upper Limit", upperlimit);
     }
     
     public void run() {

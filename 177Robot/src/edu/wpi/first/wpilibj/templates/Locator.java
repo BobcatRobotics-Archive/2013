@@ -5,6 +5,7 @@
 package edu.wpi.first.wpilibj.templates;
 
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
 /**
  * Keep track of robots location in x,y grid with 0,0 being starting location
@@ -12,9 +13,9 @@ import edu.wpi.first.wpilibj.Encoder;
  */
 public class Locator {
     
-    final EnhancedGyro headingGyro;
-    final Encoder leftEncoder;
-    final Encoder rightEncoder;
+    private final EnhancedGyro headingGyro;
+    private final Encoder leftEncoder;
+    private final Encoder rightEncoder;
     private final UpdateLocation updateLocation;
     
     public Locator(int leftEncoderA, int leftEncoderB, int rightEncoderA, int rightEncoderB, int gyroChannel) {
@@ -28,7 +29,13 @@ public class Locator {
     
         leftEncoder.start();
         rightEncoder.start();
-        updateLocation = new UpdateLocation();        
+        updateLocation = new UpdateLocation();       
+        
+            
+        LiveWindow.addSensor("Locater", "left Encoder", leftEncoder);
+        LiveWindow.addSensor("Locater", "right Encoder", rightEncoder);
+        LiveWindow.addSensor("Locater", "Gyro", headingGyro);
+            
     }
     
     public void start() {

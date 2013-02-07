@@ -22,9 +22,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Team177Robot extends IterativeRobot {
     
     /** Constants to disable subsystems to facilitate testing */
-    private static final boolean enableClimber = true;
+    private static final boolean enableClimber = false;
     private static final boolean enableShooter = true;
-    private static final boolean enableVision  = true;
+    private static final boolean enableVision  = false;
     
     /** Right Joystick Buttons **/
     private static final int shiftButton = 3; //Right Joystick button 3 is the shifter
@@ -52,13 +52,13 @@ public class Team177Robot extends IterativeRobot {
     /** IO Definitions **/
     /* Motors */
     private static final int MotorDriveRL = 1;
-    private static final int MotorDriveRR = 2;
+    private static final int MotorDriveRR = 7;//2;
     private static final int MotorDriveFL = 3;
-    private static final int MotorDriveFR = 4;
+    private static final int MotorDriveFR = 8;//4;
     private static final int MotorDriveML = 5;
     private static final int MotorDriveMR = 6;    
-    private static final int MotorShooter1 = 7;
-    private static final int MotorShooter2 = 8;
+    private static final int MotorShooter1 = 2;
+    private static final int MotorShooter2 = 4;
     
     /* Analog Inputs */
     private static final int AIOGyro = 1;
@@ -77,10 +77,10 @@ public class Team177Robot extends IterativeRobot {
     private static final int DIOclimberUpperSwitch = 11;
     
     /* Solenoids - Module 1 */
-    private static final int SolenoidDriveShifter = 1;
+    private static final int SolenoidDriveShifter = 4;//1;
     private static final int SolenoidClimberPTO = 2;
     private static final int SolenoidDriveOmni = 3;
-    private static final int SolenoidShooterPin = 4;   
+    private static final int SolenoidShooterPin = 1;   
     private static final int SolenoidShooterFeed = 5;
     private static final int SolenoidShooterElevation = 6;
     private static final int SolenoidPickupDeploy = 7;
@@ -151,28 +151,18 @@ public class Team177Robot extends IterativeRobot {
     AutoMode auto;
     
     /* State Variables */
-    boolean lastFireButton = false;
     boolean lastDeployButton = false;
     
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
      */
-    public void robotInit() {
-        
+    public void robotInit() {       
         if(enableShooter) {
             shooter = new Shooter(MotorShooter1, DIOshooterEncoder1A, DIOshooterEncoder1B, 
                         MotorShooter2, DIOshooterEncoder2A, DIOshooterEncoder2B, 
-                        SolenoidShooterPin, SolenoidShooterFeed,SolenoidShooterElevation);
-            
-            LiveWindow.addSensor("Shooter", "Encoder 1", shooter.shooterEncoder1);
-            LiveWindow.addSensor("Shooter", "Encoder 2", shooter.shooterEncoder2);
-            LiveWindow.addActuator("Shooter", "Feed", shooter.shooterFeed);
-            LiveWindow.addActuator("Shooter", "Pin", shooter.shooterPin);
-            LiveWindow.addActuator("Shooter", "Elevation", shooter.shooterElevation);
-            LiveWindow.addActuator("Shooter", "Motor 1", shooter.shooterMotor1.shooterMotor);
-            LiveWindow.addActuator("Shooter", "Motor 2", shooter.shooterMotor2.shooterMotor);
-            
+                        SolenoidShooterFeed, SolenoidShooterPin, SolenoidShooterElevation);
+           
             //Start Shooter
             shooter.start();
         }
@@ -181,14 +171,7 @@ public class Team177Robot extends IterativeRobot {
             climber = new Climber(this, DIOclimberLowerSwitch, DIOclimberUpperSwitch,
                                    SolenoidClimberPTO, SolenoidClimberBrake, 
                                    SolenoidClimberDeployOut, SolenoidClimberDeployIn);
-            
-            LiveWindow.addActuator("Climmber", "PTO", climber.pto);
-            LiveWindow.addActuator("Climmber", "Brake", climber.brake);
-            LiveWindow.addActuator("Climmber", "DeployIn", climber.deployIn);
-            LiveWindow.addActuator("Climmber", "DeployOut", climber.deployOut);
-            LiveWindow.addSensor("Climber", "Lower Limit", climber.lowerlimit);
-            LiveWindow.addSensor("Climber", "Upper Limit", climber.upperlimit);
-            
+                       
             //Start Climber
             climber.start();
         }
@@ -209,11 +192,7 @@ public class Team177Robot extends IterativeRobot {
         //locator.setDistancePerPulse(0.15574f, 0.15748f);  //2012
         locator.setDistancePerPulse(0.095874f, 0.095874f);  //2011
         locator.start();
-    
-        LiveWindow.addSensor("Locater", "left Encoder", locator.leftEncoder);
-        LiveWindow.addSensor("Locater", "right Encoder", locator.rightEncoder);
-        LiveWindow.addSensor("Locater", "Gyro", locator.headingGyro);
-            
+
         /*Setup LiveWindow */        
         LiveWindow.addActuator("Drive", "Left Front", frontLeftMotor);
         LiveWindow.addActuator("Drive", "Left Mid", midLeftMotor);
@@ -225,7 +204,7 @@ public class Team177Robot extends IterativeRobot {
         LiveWindow.addActuator("Drive", "Omni", omni);
                         
         /* Turn on watchdog */
-        getWatchdog().setEnabled(true);
+        //getWatchdog().setEnabled(true);
 
     }
     
@@ -255,6 +234,9 @@ public class Team177Robot extends IterativeRobot {
      * Initialization code for teleop mode should go here.
      */
     public void teleopInit() {
+        if(enableShooter && shooter.isPaused()) {
+            shooter.Resume();
+        }
         locator.Reset();
     } 
     
@@ -306,11 +288,8 @@ public class Team177Robot extends IterativeRobot {
             }
         
             /* Missle switch is just for inital testing, can be removed if needed elsewhere */
-            if(!lastFireButton && (!m_ds.getDigitalIn(missleSwitchChannel) || operatorStick.getRawButton(shootButton))) {
-                shooter.Fire();
-            }
-            lastFireButton = (!m_ds.getDigitalIn(missleSwitchChannel) || operatorStick.getRawButton(shootButton));
-        
+            shooter.Fire((!m_ds.getDigitalIn(missleSwitchChannel) || operatorStick.getRawButton(shootButton)));
+                
             /* Shooter Testing */
             shooter.SpinTest(operatorStick.getRawButton(shooterTestButton)); 
             shooter.FeedTest(operatorStick.getRawButton(feedTestButton)); 
@@ -320,7 +299,7 @@ public class Team177Robot extends IterativeRobot {
         SmartDashboard.putNumber("X", locator.GetX());
         SmartDashboard.putNumber("Y", locator.GetY());
         SmartDashboard.putNumber("Heading", locator.GetHeading());
-        
+     
         if(enableVision) {
             SmartDashboard.putNumber("Distance", vision.distance);
             SmartDashboard.putNumber("DeltaX", vision.deltax);
@@ -333,9 +312,12 @@ public class Team177Robot extends IterativeRobot {
      * This function is called periodically during test mode
      */
     public void testPeriodic() {
+        if(enableShooter && !shooter.isPaused()) {
+            shooter.Pause();
+        }
         LiveWindow.run();
-        getWatchdog().feed();
-        Timer.delay(0.01);     
+        //getWatchdog().feed();
+        //Timer.delay(0.1);     
         //drive.tankDrive(0,0);
         drive.setSafetyEnabled(false);
     }

@@ -24,8 +24,9 @@ public class AutoModeShootFromSide extends AutoMode
 	{
 	    case 0:
 		//Drive to where we have a clear shot
-		if(DriveTo(0, -89, 0.5))
+		if(DriveTo(0, -73, 0.5))
 		{
+		    //TODO: Other turn - test which one works
 		    if(((startHeading-robot.locator.GetHeading())+360)%360 > 90)
 		    {
 			robot.drive.tankDrive(0.0,0.0);

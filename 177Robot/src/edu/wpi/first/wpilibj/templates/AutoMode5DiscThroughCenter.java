@@ -38,7 +38,7 @@ public class AutoMode5DiscThroughCenter extends AutoMode
 		}
 		break;
 	    case 4:
-		//Pickup frisbees
+		//TODO: Pickup frisbees
 		stepCount++;
 		break;
 	    case 5:

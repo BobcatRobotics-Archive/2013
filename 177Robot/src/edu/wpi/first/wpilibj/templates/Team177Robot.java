@@ -193,6 +193,7 @@ public class Team177Robot extends IterativeRobot {
         /*Set encoder scaling */
         
 	locator.setDistancePerPulse(0.0934f, 0.0934f);  //2013
+        locator.setDistancePerPulse(0.029998f, 0.029998f);  //2013 - Theoretical
         //locator.setDistancePerPulse(0.15574f, 0.15748f);  //2012
         //locator.setDistancePerPulse(0.095874f, 0.095874f);  //2011
         locator.start();

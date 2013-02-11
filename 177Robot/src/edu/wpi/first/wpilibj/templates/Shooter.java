@@ -36,11 +36,11 @@ public class Shooter extends Thread {
     private static final int SPINUP = 1;
     private static final int FEED = 2;
     
-    private final Encoder shooterEncoder1;
+    private final FilteredEncoder shooterEncoder1;
     private final ShooterMotor shooterMotor1;
     private PIDController shooterControl1;
     
-    private final Encoder shooterEncoder2;
+    private final FilteredEncoder shooterEncoder2;
     private final ShooterMotor shooterMotor2;
     private PIDController shooterControl2;
     
@@ -57,12 +57,12 @@ public class Shooter extends Thread {
     private boolean shooting = false;
     
     public Shooter(int Motor1, int Encoder1A, int Encoder1B, int Motor2, int Encoder2A, int Encoder2B, int Feed, int Pin, int Elevation) {
-        shooterEncoder1 = new Encoder(Encoder1A, Encoder1B);
+        shooterEncoder1 = new FilteredEncoder(Encoder1A, Encoder1B);
         shooterEncoder1.setDistancePerPulse(60.0 / 250.0); //360 pulse per revolution, multiplied by 60 to RPM? - need to confirm.
         shooterEncoder1.setPIDSourceParameter(Encoder.PIDSourceParameter.kRate);
         shooterEncoder1.start();
 
-        shooterEncoder2 = new Encoder(Encoder2A, Encoder2B);
+        shooterEncoder2 = new FilteredEncoder(Encoder2A, Encoder2B);
         shooterEncoder2.setDistancePerPulse(60.0 / 360.0); //360 pulse per revolution, multiplied by 60 to RPM? - need to confirm.
         shooterEncoder2.setPIDSourceParameter(Encoder.PIDSourceParameter.kRate);
         shooterEncoder2.start();

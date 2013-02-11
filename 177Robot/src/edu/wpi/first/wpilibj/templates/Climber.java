@@ -151,7 +151,7 @@ public class Climber extends Thread {
     }
         
     public synchronized void toggleDeploy() {
-        if (!deployIn.get()) {
+        if (deployOut.get()) {
             //Climber is deployed, retract it, but only if it's lowered.
             if(lowerlimit.get()) {
                 deployOut.set(false);

@@ -3,6 +3,8 @@
  */
 package edu.wpi.first.wpilibj.templates;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 
 /**
  *
@@ -21,19 +23,20 @@ public class AutoModeDriveToTest extends AutoMode {
         switch(StepCount) {
             case 0:
                 //Drive Forward 3 feet
-                if(DriveTo(36,0,0.5)) {
+                if(DriveTo(94.2,0,0.75)) {
                     StepCount++;
                 }
                 break;
             case 1:
                 //Drive to right
-                if(DriveTo(72.0,-36,0.5)) {
+                if(DriveTo(0,0,-0.75)) {
                     StepCount++;
                 }
                 break;
             default:
                 robot.drive.tankDrive(0.0,0.0);
         }
+	SmartDashboard.putNumber("StepCount", StepCount);
     }
        
     public String getName() {

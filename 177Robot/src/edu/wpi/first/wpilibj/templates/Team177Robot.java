@@ -22,8 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Team177Robot extends IterativeRobot {
     
     /** Constants to disable subsystems to facilitate testing */
-    private static final boolean enableClimber = false;
-    private static final boolean enableShooter = true;
+    private static final boolean enableClimber = true;
+    private static final boolean enableShooter = false;
     private static final boolean enableVision  = false;
     
     /** Right Joystick Buttons **/
@@ -44,6 +44,9 @@ public class Team177Robot extends IterativeRobot {
 
     /** Driver station Digital Channels **/
     // Automode switches are channels 1-3
+    private static final int firstAutoSwitchChannel = 1;
+    private static final int secondAutoSwitchChannel = 2;
+    private static final int thirdAutoSwitchChannel = 3;
     private static final int missleSwitchChannel = 4;
 
     /** Constants **/
@@ -52,35 +55,35 @@ public class Team177Robot extends IterativeRobot {
     /** IO Definitions **/
     /* Motors */
     private static final int MotorDriveRL = 1;
-    private static final int MotorDriveRR = 7;//2;
+    private static final int MotorDriveRR = 2;
     private static final int MotorDriveFL = 3;
-    private static final int MotorDriveFR = 8;//4;
+    private static final int MotorDriveFR = 4;
     private static final int MotorDriveML = 5;
     private static final int MotorDriveMR = 6;    
-    private static final int MotorShooter1 = 2;
-    private static final int MotorShooter2 = 4;
+    private static final int MotorShooter1 = 7;
+    private static final int MotorShooter2 = 8;
     
     /* Analog Inputs */
     private static final int AIOGyro = 1;
     
     /* Digital IO */
     private static final int DIOPressureSwitch = 1;
-    private static final int DIOLeftEncoderA = 2;
-    private static final int DIOLeftEncoderB = 3;    
-    private static final int DIORightEncoderA = 4;
-    private static final int DIORightEncoderB = 5;    
-    private static final int DIOshooterEncoder1A = 10;//6;
-    private static final int DIOshooterEncoder1B = 11; //7;    
-    private static final int DIOshooterEncoder2A = 12;//8;
-    private static final int DIOshooterEncoder2B = 13;//9;
+    private static final int DIOLeftEncoderA = 5;
+    private static final int DIOLeftEncoderB = 4;    
+    private static final int DIORightEncoderA = 3;
+    private static final int DIORightEncoderB = 2;    
+    private static final int DIOshooterEncoder1A = 6;
+    private static final int DIOshooterEncoder1B = 7;    
+    private static final int DIOshooterEncoder2A = 8;
+    private static final int DIOshooterEncoder2B = 9;
     private static final int DIOclimberLowerSwitch = 10;
     private static final int DIOclimberUpperSwitch = 11;
     
     /* Solenoids - Module 1 */
-    private static final int SolenoidDriveShifter = 4;//1;
+    private static final int SolenoidDriveShifter = 1;
     private static final int SolenoidClimberPTO = 2;
     private static final int SolenoidDriveOmni = 3;
-    private static final int SolenoidShooterPin = 1;   
+    private static final int SolenoidShooterPin = 4;   
     private static final int SolenoidShooterFeed = 5;
     private static final int SolenoidShooterElevation = 6;
     private static final int SolenoidPickupDeploy = 7;
@@ -188,9 +191,10 @@ public class Team177Robot extends IterativeRobot {
         /* Configure and Start the locator */
 
         /*Set encoder scaling */
-        //locator.setDistancePerPulse(1.0f, 1.0f);  //2013
+        
+	locator.setDistancePerPulse(0.0934f, 0.0934f);  //2013
         //locator.setDistancePerPulse(0.15574f, 0.15748f);  //2012
-        locator.setDistancePerPulse(0.095874f, 0.095874f);  //2011
+        //locator.setDistancePerPulse(0.095874f, 0.095874f);  //2011
         locator.start();
 
         /*Setup LiveWindow */        
@@ -210,7 +214,7 @@ public class Team177Robot extends IterativeRobot {
     
     public void autonomousInit() {  
         locator.Reset(); //This maybe a problem as it takes a couple of seconds for it to actually reset
-        if(auto != null) {
+	if(auto != null) {
             auto.autoInit();
         }
     }
@@ -245,9 +249,10 @@ public class Team177Robot extends IterativeRobot {
      */
     public void teleopPeriodic() {
         
-        /* Climber/Drive Code */ 
-        if(enableClimber) {
-            if(!operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest)) {
+        /* Climber/Drive Code */
+	
+	if(enableClimber) {
+            if(!climber.isDeployed() || (!operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest))) {
                 // Regular Driving
                 climber.enable(false);
                 climber.setPTO(false);
@@ -258,7 +263,7 @@ public class Team177Robot extends IterativeRobot {
                 climber.enable(false);
                 climber.setPTO(true);
                 shifter.set(false);
-                climber.test(operatorStick.getRawAxis(climberTestAxis));                
+                climber.test(operatorStick.getRawAxis(climberTestAxis));   
             } else {
                 // Climber Button
                 shifter.set(false);            
@@ -324,24 +329,42 @@ public class Team177Robot extends IterativeRobot {
     
     public void disabledPeriodic() {
         try {
-            int new_autoMode = (m_ds.getDigitalIn(3)?0:1) + (m_ds.getDigitalIn(2)?0:2) + (m_ds.getDigitalIn(1)?0:4);
-            if (new_autoMode != autoMode) {
-                //Selected auto mode has changed, update references
-                autoMode = new_autoMode;
-                switch (autoMode) {
-                    case 1:
-                        auto = new AutoModeThroughCenter(this);
-                        break;
-                    case 2:
-                        auto = new AutoMode5DiscThroughCenter(this);
-                        break;
-                    case 3:
-                        auto = new AutoModeParkTest(this);
-                        break;
-                    default:
-                        auto = null;
-                }
-            }
+	    int new_automode = (m_ds.getDigitalIn(firstAutoSwitchChannel) ? 1 : 0) + (m_ds.getDigitalIn(secondAutoSwitchChannel) ? 2 : 0) + (m_ds.getDigitalIn(thirdAutoSwitchChannel) ? 4 : 0);
+	    if (new_automode != autoMode)
+	    {
+
+		autoMode = new_automode;
+		/*
+		 * Automode Key: 0 - Do nothing 1 - Shoot From Front 2 - Shoot
+		 * Through Center 3 - 5 Disc Through Center 4 - Shoot From Side
+		 * 5 - Shoot from Side and Pickup Frisbees
+		 */
+		switch (autoMode)
+		{
+		    case 0:
+			auto = new AutoModeDoNothing(this);
+			break;
+		    case 1:
+			//auto = new AutoModeFromFront(this);
+			auto = new AutoModeDriveToTest(this);
+			break;
+		    case 2:
+			auto = new AutoModeThroughCenter(this);
+			break;
+		    case 3:
+			auto = new AutoMode5DiscThroughCenter(this);
+			break;
+		    case 4:
+			auto = new AutoModeShootFromSide(this);
+			break;
+		    case 5:
+			auto = new AutoModeShootFromSidePickUpFrisbees(this);
+			break;
+		    default:
+			auto = new AutoModeDoNothing(this);
+			break;
+		}
+	    }
 
             autoDelay = (float)m_ds.getAnalogIn(1) * autoDelayMultiplier;
         } catch (Exception e) {

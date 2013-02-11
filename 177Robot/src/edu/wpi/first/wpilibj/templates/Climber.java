@@ -91,7 +91,7 @@ public class Climber extends Thread {
         if((Math.abs(maxdistance-stagelength) < encoderThresh) || (!upperlimit.get())) {
             state = RETRACTING;
         } else {
-            robot.drive.tankDrive(throttle, throttle);
+            robot.drive.tankDrive(0, throttle);
         }
     }
     
@@ -100,7 +100,7 @@ public class Climber extends Thread {
         if((mindistance < encoderThresh) || (!lowerlimit.get())) {
             state = EXTENDING;
         } else {
-            robot.drive.tankDrive(-throttle, -throttle);
+            robot.drive.tankDrive(0, -throttle);
         }
         
     }
@@ -130,7 +130,7 @@ public class Climber extends Thread {
             robot.drive.tankDrive(0, 0);
             setPTO(false);
             enabled = false;            
-        } else if(deployOut.get() && !enabled) {
+        } else if(e && deployOut.get() && !enabled) {
             //Enable only if the climber has been deployed
             setPTO(true);
             enabled = true;
@@ -140,25 +140,31 @@ public class Climber extends Thread {
     public synchronized void test(double value) {    
         if(deployOut.get() && !enabled && pto.get()) {
             // Climber has to be deployed, and not running to test. PTO must be engaged 
-            if((value > 0.1 && !upperlimit.get()) || (value < -0.1 && !lowerlimit.get())) {                
-                robot.drive.tankDrive(value, value);
+            if((value > 0.1 && upperlimit.get()) || (value < -0.1 && lowerlimit.get())) {                
+                robot.drive.tankDrive(0, value);
             } else {
                 robot.drive.tankDrive(0, 0);
             }
-        }
+        } else {
+	    robot.drive.tankDrive(0, 0);
+	}
     }
         
     public synchronized void toggleDeploy() {
         if (!deployIn.get()) {
             //Climber is deployed, retract it, but only if it's lowered.
-            if(!lowerlimit.get()) {
+            if(lowerlimit.get()) {
                 deployOut.set(false);
                 deployIn.set(true);
             }
         } else {
             //Climber is retracted, depoly it
-            deployIn.set(true);
+            deployIn.set(false);
             deployOut.set(true);
         }
-    }                     
+    }
+    
+    public synchronized boolean isDeployed() {
+	return deployOut.get();
+    }
 }

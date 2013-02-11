@@ -21,17 +21,17 @@ public abstract class AutoMode {
     
     /* Variables & Constants used for DriveTo PID Controls */ 
     private static double SteerMargin = 3.0; //Margin to consider robot facing target (degrees)
-    private static double DriveMargin = 2.0; //Margin to consider the robot at target (in)
+    private static double DriveMargin = 5.0; //Margin to consider the robot at target (in)
     
-    private static double DriveP = 0.1;  //Preportial gain for Drive System
+    private static double DriveP = 0.25;  //Preportial gain for Drive System
     private static double DriveI = 0.0;   //Integral gain for Drive System
     private static double DriveD = 0.0;   //Derivative gain for Drive System
     private static double DriveMax = 1;   //Max Saturation value for control
     private static double DriveMin = -1;  //Min Saturation value for control
     
-    private static double SteerP = 0.02;  //Preportial gain for Steering System
+    private static double SteerP = 0.02;//0.02  //Preportial gain for Steering System
     private static double SteerI = 0.01;  //Integral gain for Steering System
-    private static double SteerD = 0.002;  //Derivative gain for Steering System
+    private static double SteerD = 0.00;  //Derivative gain for Steering System
     private static double SteerMax = 1;   //Max Saturation value for control
     private static double SteerMin = -1;  //Min Saturation value for control
     

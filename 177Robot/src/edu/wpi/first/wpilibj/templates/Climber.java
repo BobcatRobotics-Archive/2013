@@ -86,9 +86,8 @@ public class Climber extends Thread {
         }
     }
     
-    private void Extending() {        
-        double maxdistance = Math.max(robot.locator.getLeftRaw(), robot.locator.getRightRaw());
-        if((Math.abs(maxdistance-stagelength) < encoderThresh) || (!upperlimit.get())) {
+    private void Extending() {                
+        if((Math.abs(robot.locator.getRightRaw()-stagelength) < encoderThresh) || (!upperlimit.get())) {
             state = RETRACTING;
         } else {
             robot.drive.tankDrive(0, throttle);
@@ -96,8 +95,7 @@ public class Climber extends Thread {
     }
     
     private void Retracting() {        
-        double mindistance = Math.min(robot.locator.getLeftRaw(), robot.locator.getRightRaw());
-        if((mindistance < encoderThresh) || (!lowerlimit.get())) {
+        if((robot.locator.getRightRaw() < encoderThresh) || (!lowerlimit.get())) {
             state = EXTENDING;
         } else {
             robot.drive.tankDrive(0, -throttle);
@@ -107,7 +105,7 @@ public class Climber extends Thread {
     
     private void Driving() {
         //TODO: Check for pyramid contact
-        robot.locator.Reset();
+        robot.locator.startClimberMode();
         state = EXTENDING;
     }
     
@@ -138,7 +136,7 @@ public class Climber extends Thread {
     }
     
     public synchronized void test(double value) {    
-        if(deployOut.get() && !enabled && pto.get()) {
+        if(deployOut.get() && !enabled && pto.get()) {            
             // Climber has to be deployed, and not running to test. PTO must be engaged 
             if((value > 0.1 && upperlimit.get()) || (value < -0.1 && lowerlimit.get())) {                
                 robot.drive.tankDrive(0, value);

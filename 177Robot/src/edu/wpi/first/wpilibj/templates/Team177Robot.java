@@ -22,8 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Team177Robot extends IterativeRobot {
     
     /** Constants to disable subsystems to facilitate testing */
-    private static final boolean enableClimber = true;
-    private static final boolean enableShooter = false;
+    private static final boolean enableClimber = false;
+    private static final boolean enableShooter = true;
     private static final boolean enableVision  = false;
     
     /** Right Joystick Buttons **/
@@ -72,10 +72,10 @@ public class Team177Robot extends IterativeRobot {
     private static final int DIOLeftEncoderB = 4;    
     private static final int DIORightEncoderA = 3;
     private static final int DIORightEncoderB = 2;    
-    private static final int DIOshooterEncoder1A = 6;
-    private static final int DIOshooterEncoder1B = 7;    
-    private static final int DIOshooterEncoder2A = 8;
-    private static final int DIOshooterEncoder2B = 9;
+    private static final int DIOshooterEncoder1A = 7;
+    private static final int DIOshooterEncoder1B = 6;    
+    private static final int DIOshooterEncoder2A = 9;
+    private static final int DIOshooterEncoder2B = 8;
     private static final int DIOclimberLowerSwitch = 10;
     private static final int DIOclimberUpperSwitch = 11;
     
@@ -192,8 +192,8 @@ public class Team177Robot extends IterativeRobot {
 
         /*Set encoder scaling */
         
-	locator.setDistancePerPulse(0.0934f, 0.0934f);  //2013
-        locator.setDistancePerPulse(0.029998f, 0.029998f);  //2013 - Theoretical
+	locator.setDistancePerPulse(0.086128257f, 0.086852995f);  //2013
+        //locator.setDistancePerPulse(0.029998f, 0.029998f);  //2013 - Theoretical
         //locator.setDistancePerPulse(0.15574f, 0.15748f);  //2012
         //locator.setDistancePerPulse(0.095874f, 0.095874f);  //2011
         locator.start();
@@ -261,10 +261,10 @@ public class Team177Robot extends IterativeRobot {
                 shifter.set(rightStick.getRawButton(shiftButton));
             } else if (operatorStick.getRawButton(climberPTOTest)) {
                 // Climber testing
-                climber.enable(false);
-                climber.setPTO(true);
-                shifter.set(false);
-                climber.test(operatorStick.getRawAxis(climberTestAxis));   
+                climber.enable(false);   //Disable the climber logic
+                climber.setPTO(true);    //Enable the PTO
+                shifter.set(false);      //Make sure we are in Low Gear
+                climber.test(operatorStick.getRawAxis(climberTestAxis));  //Use the stick to control the climber                
             } else {
                 // Climber Button
                 shifter.set(false);            
@@ -288,9 +288,9 @@ public class Team177Robot extends IterativeRobot {
         if(enableShooter) {
             /* Shooter */
             if(operatorStick.getRawAxis(shooterElevateAxis) > 0) {
-                shooter.SetElevated(true); 
-            } else if(operatorStick.getRawAxis(shooterElevateAxis) < 0) {
                 shooter.SetElevated(false); 
+            } else if(operatorStick.getRawAxis(shooterElevateAxis) < 0) {
+                shooter.SetElevated(true); 
             }
         
             /* Missle switch is just for inital testing, can be removed if needed elsewhere */
@@ -361,6 +361,9 @@ public class Team177Robot extends IterativeRobot {
 		    case 5:
 			auto = new AutoModeShootFromSidePickUpFrisbees(this);
 			break;
+                    case 6:
+                        auto = new AutoModeThroughCenterBlockCenter(this);
+                        break;
 		    default:
 			auto = new AutoModeDoNothing(this);
 			break;

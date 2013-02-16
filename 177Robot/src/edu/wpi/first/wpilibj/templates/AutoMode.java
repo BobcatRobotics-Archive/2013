@@ -21,7 +21,7 @@ public abstract class AutoMode {
     
     /* Variables & Constants used for DriveTo PID Controls */ 
     private static double SteerMargin = 3.0; //Margin to consider robot facing target (degrees)
-    private static double DriveMargin = 2.0; //Margin to consider the robot at target (in)
+    private static double DriveMargin = 1.0; //Margin to consider the robot at target (in)
     
     private static double DriveP = 0.25;  //Preportial gain for Drive System
     private static double DriveI = 0.0;   //Integral gain for Drive System
@@ -29,14 +29,17 @@ public abstract class AutoMode {
     private static double DriveMax = 1;   //Max Saturation value for control
     private static double DriveMin = -1;  //Min Saturation value for control
     
-    private static double SteerP = 0; //0.02;//0.02  //Preportial gain for Steering System
-    private static double SteerI = 0; //0.01;  //Integral gain for Steering System
+    private static double SteerP = 0.02;  //Preportial gain for Steering System
+    private static double SteerI = 0.01;  //Integral gain for Steering System
     private static double SteerD = 0.00;  //Derivative gain for Steering System
     private static double SteerMax = 1;   //Max Saturation value for control
     private static double SteerMin = -1;  //Min Saturation value for control
     
     double lastTargetX = 0;
     double lastTargetY = 0;
+    double planeSlope = 0;
+    double planeIntercept = 0;
+    
     
     double lastRanDriveTo = 0;
 
@@ -137,6 +140,104 @@ public abstract class AutoMode {
             return false;
         }        
     }
+    
+    
+   /**
+     * 
+     * Drive the robot to the specified location, will stop when it crosses the plane tangent to the initial heading, through the target point
+     * 
+     *      -----------    +
+     *      | Robot   |
+     *      |   --->  |    Y
+     *      |         |   
+     *      -----------    -
+     *       -   X    +
+     *  Robot starts match at 0,0 heading 0
+     * 
+     * @param x - x coordinate of target
+     * @param y - y coordinate of target
+     * @param speed - Speed to drive, a negative value will cause the robot to backup.
+     *                A Speed of 0 will cause the robot to turn to the target without moving
+     * @return - Boolean value indicating if the robot is at the target or not (true = at target).
+     * @author schroed
+     */     
+    public boolean DriveToPlane(double x, double y, double speed) 
+    {
+        double steer, drive;
+        
+        double deltaX = x - robot.locator.GetX();
+        double deltaY = y - robot.locator.GetY();
+        double distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+        //System.out.println("DeltaX: "+deltaX+"  DeltaY: "+deltaY);
+        //determine angle to target relative to field
+        double targetHeading = Math.toDegrees(MathUtils.atan2(deltaY, deltaX));  // +/- 180 degrees
+        //System.out.println("Target Heading: "+targetHeading);
+        if(speed < 0) {
+            //reverse heading if going backwards
+            targetHeading += 180;
+        }
+                
+        //Reinitalize if the target has changed
+        if(x != lastTargetX || y != lastTargetY) {
+            lastTargetX = x;
+            lastTargetY = y;
+            DrivePID.reset();
+            SteerPID.reset();
+            
+            if(deltaX == 0) {
+                planeSlope = Float.POSITIVE_INFINITY;
+            } else {
+                planeSlope = -1.0*(deltaY/deltaX);
+                planeIntercept = y-(planeSlope*x);
+            }            
+            
+            SmartDashboard.putNumber("Target X", x);
+            SmartDashboard.putNumber("Target Y", y);  
+            lastRanDriveTo = Timer.getFPGATimestamp();
+        }
+        //Calculate time step
+        double now = Timer.getFPGATimestamp();
+        double dT = (now - lastRanDriveTo);
+        lastRanDriveTo = now;
+                        
+        //Determine  angle to target relative to robot
+        
+        double bearing = (targetHeading + robot.locator.GetHeading())%360;
+        if (bearing > 180) {
+            bearing = bearing - 360; //Quicker to turn the other direction
+        }
+        
+        /* Steering PID Control */
+        steer = SteerPID.calculate(bearing, dT);
+        //System.out.println("BEARING: "+bearing);
+        
+        /* Drive PID Control */                
+        if(speed == 0) {
+            //Just turn to the target, no PI Control
+            drive = 0;
+        } else {
+            drive = -1.0*DrivePID.calculate(distance, dT)*speed;
+        }        
+
+        //Move the robot - Would this work better if we multiplyed by the steering PID output?
+        //System.out.println("DRIVE: "+drive);
+        //System.out.println("STEER: "+steer);
+        robot.drive.tankDrive(drive+steer, drive-steer);
+                
+        if(planeSlope == 0.0f ) {
+            //Driving along the X axis, ignore Y
+            return Math.abs(deltaX) < DriveMargin;
+        } else if (planeSlope == Float.POSITIVE_INFINITY) {
+            //Driving along the Y axis, ignore X
+            return Math.abs(deltaY) < DriveMargin;
+        } else if (planeIntercept >= 0.0f ) {            
+            return robot.locator.GetY() >= robot.locator.GetX()*planeSlope+planeIntercept;
+        } else {
+            return robot.locator.GetY() <= robot.locator.GetX()*planeSlope+planeIntercept;
+        } 
+    }
+    
+    
 
     /**
      *

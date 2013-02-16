@@ -23,15 +23,15 @@ public class AutoModeDriveToTest extends AutoMode {
         switch(StepCount) {
             case 0:
                 //Drive Forward 3 feet
-                if(DriveTo(94.2,0,0.75)) {
+                if(DriveTo(0,90,0)) {
                     StepCount++;
                 }
                 break;
             case 1:
                 //Drive to right
-                if(DriveTo(0,0,-0.75)) {
+                //if(DriveTo(0,0,-0.75)) {
                     StepCount++;
-                }
+                //}
                 break;
             default:
                 robot.drive.tankDrive(0.0,0.0);

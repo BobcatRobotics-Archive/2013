@@ -42,6 +42,22 @@ public class Locator {
         updateLocation.start();
     }
     
+    public void startClimberMode() {
+        //Stop the locater thread and reset the encoder for use by the climber.
+        if(updateLocation.isEnabled()) {
+            updateLocation.enable(false);
+            rightEncoder.reset();
+        }            
+    }
+    
+    public void startLocatorMode() {
+        //Start the locater thread
+        if(!updateLocation.isEnabled()) {        
+            updateLocation.enable(true);
+            Reset();
+        }
+    }
+    
     public double GetHeading() {
         return updateLocation.heading;
     }
@@ -56,7 +72,7 @@ public class Locator {
     
     /* Set x/y location to 0,0 and heading to 0 degrees */
     public void Reset() {
-        updateLocation.Reset();        
+        updateLocation.Reset();   
     }
     
     public double getLeftRaw() {
@@ -78,6 +94,7 @@ public class Locator {
         public double y;
         public double heading;
         private boolean ResetFlag = false;
+        private boolean enabled = true;
 
         UpdateLocation() {
             x = 0;
@@ -90,6 +107,14 @@ public class Locator {
             ResetFlag = true;
         }
         
+        public synchronized void enable(boolean e) {
+            enabled = e;
+        }
+        
+        public synchronized boolean isEnabled() {
+            return enabled;
+        }
+        
         public void run() {       
             double deltax, deltay;
             double distance;
@@ -98,35 +123,38 @@ public class Locator {
             double left, right;
             
             while (true) {
-                if(ResetFlag) {
-                    x = 0;
-                    y = 0;
-                    headingGyro.reset();
-                    ResetFlag = false;
-                }
-                left = leftEncoder.getDistance();
-                right = rightEncoder.getDistance();                
-                /* Average the two encoder values */ 
-                /* TODO - posiably add error checking to detect a failed encoder and ignore it */
-                //distance = ((left-lastLeft )+(right-lastRight ))/2.0;                               
-                distance = (right-lastRight ); //left encoder doesn't work on 2012 drivetrain                               
-                heading = headingGyro.GetHeading();
-                
-                /* Do fancy trig stuff */
-                deltax = distance*Math.cos(Math.toRadians(heading));
-                deltay = distance*Math.sin(Math.toRadians(heading));
-                
-                /* Update Location */
-                x += deltax;
-                y -= deltay;
-                
-                /* Update history variables */
-                lastLeft = left;
-                lastRight = right;
-                
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
+                if (enabled) {
+                    if (ResetFlag) {
+                        x = 0;
+                        y = 0;
+                        headingGyro.reset();
+                        ResetFlag = false;
+                    }
+                    left = leftEncoder.getDistance();
+                    right = rightEncoder.getDistance();
+                    /* Average the two encoder values */
+                    /* TODO - posiably add error checking to detect a failed encoder and ignore it */
+                    distance = ((left - lastLeft) + (right - lastRight)) / 2.0;
+                    //distance = (right-lastRight ); //left encoder doesn't work on 2012 drivetrain                               
+                    heading = headingGyro.GetHeading();
+
+                    /* Do fancy trig stuff */
+                    deltax = distance * Math.cos(Math.toRadians(heading));
+                    deltay = distance * Math.sin(Math.toRadians(heading));
+
+                    /* Update Location */
+                    x += deltax;
+                    y -= deltay;
+
+                    /* Update history variables */
+                    lastLeft = left;
+                    lastRight = right;
+
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                    }
+                    //System.out.println("Left: " + left + " Right: " + right);
                 }
             }
         }    

@@ -24,8 +24,8 @@ public class AutoModeThroughCenter extends AutoMode
 	{
 	    case 0: 
 		//Shoot 3 times
-		robot.shooter.Fire(3);
-		stepCount++;
+		robot.shooter.Fire(true);
+		//stepCount++;
 		break;
 	    default:
 		robot.drive.tankDrive(0.0,0.0);

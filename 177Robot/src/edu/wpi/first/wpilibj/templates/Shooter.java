@@ -21,15 +21,15 @@ public class Shooter extends Thread {
     
     //Timing
     private static final double shooterTimeOut = 5.0;  //seconds to try and reach speed
-    private static final double feedTime = 0.3;  //seconds to keep wheel spinning after actuating the feed mechanism
-    private static final double pinTime = 0.01;  //seconds to delay between pulling restraining pin and feeding 
+    private static final double feedTime = 0.65;  //seconds to keep wheel spinning after actuating the feed mechanism
+    private static final double pinTime = 0.1;  //seconds to delay between pulling restraining pin and feeding 
     private static final boolean shootOnTimeout = true; //shoot after shooterTimeOut seconds, even if not at speed
     
     //Speed setpoints
-    private static final double ElevatedSetpoint1 = 3000;
-    private static final double ElevatedSetpoint2 = 3000;
-    private static final double NonElevatedSetpoint1 = 3000;
-    private static final double NonElevatedSetpoint2 = 5000;
+    private static final double ElevatedSetpoint1 = 5000;
+    private static final double ElevatedSetpoint2 = ElevatedSetpoint1*1.2;
+    private static final double NonElevatedSetpoint1 = 5000;
+    private static final double NonElevatedSetpoint2 = NonElevatedSetpoint1*1.2;
     
     // Mode Constants
     private static final int STANDBY = 0;
@@ -58,12 +58,12 @@ public class Shooter extends Thread {
     
     public Shooter(int Motor1, int Encoder1A, int Encoder1B, int Motor2, int Encoder2A, int Encoder2B, int Feed, int Pin, int Elevation) {
         shooterEncoder1 = new FilteredEncoder(Encoder1A, Encoder1B);
-        shooterEncoder1.setDistancePerPulse(60.0 / 250.0); //360 pulse per revolution, multiplied by 60 to RPM? - need to confirm.
+        shooterEncoder1.setDistancePerPulse(60.0 / 128.0); //128 pulse per revolution, multiplied by 60 to RPM? - need to confirm.
         shooterEncoder1.setPIDSourceParameter(Encoder.PIDSourceParameter.kRate);
         shooterEncoder1.start();
 
         shooterEncoder2 = new FilteredEncoder(Encoder2A, Encoder2B);
-        shooterEncoder2.setDistancePerPulse(60.0 / 360.0); //360 pulse per revolution, multiplied by 60 to RPM? - need to confirm.
+        shooterEncoder2.setDistancePerPulse(60.0 / 128.0); //128 pulse per revolution, multiplied by 60 to RPM? - need to confirm.
         shooterEncoder2.setPIDSourceParameter(Encoder.PIDSourceParameter.kRate);
         shooterEncoder2.start();
 
@@ -74,12 +74,12 @@ public class Shooter extends Thread {
         shooterPin = new Solenoid(Pin);
         shooterElevation = new Solenoid(Elevation);
 
-        shooterControl1 = new PIDController(-0.00001, 0, 0, -0.5 / 3000.0, shooterEncoder1, shooterMotor1);
+        shooterControl1 = new PIDController(-0.0001, -0.00001, 0, -0.75 / 5000.0, shooterEncoder1, shooterMotor1);
         shooterControl1.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
         shooterControl1.setSetpoint(NonElevatedSetpoint1);
         shooterControl1.disable();
 
-        shooterControl2 = new PIDController(-0.00001, 0, 0, -0.5 / 3000.0, shooterEncoder2, shooterMotor2);
+        shooterControl2 = new PIDController(-0.0001, -0.00001, 0, -0.75 / 5000.0, shooterEncoder2, shooterMotor2);
         shooterControl2.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
         shooterControl2.setSetpoint(NonElevatedSetpoint2);
         shooterControl2.disable();
@@ -174,13 +174,25 @@ public class Shooter extends Thread {
                 shooterFeed.set(feed || feedTest);
                 shooterPin.set(pin || feedTest);
 
-                if (spin || spinTest) {
-                    shooterControl1.enable();
-                    shooterControl2.enable();
+                if (false) {
+                    if (spin || spinTest) {
+                        shooterMotor1.shooterMotor.set(-0.2);
+                        shooterMotor2.shooterMotor.set(-0.0);
+                    } else {
+                        shooterMotor1.shooterMotor.set(0);
+                        shooterMotor2.shooterMotor.set(0);
+                    }
                 } else {
-                    shooterControl1.disable();
-                    shooterControl2.disable();
+                    if (spin || spinTest) {
+                        //shooterControl1.enable();
+                        shooterControl2.enable();
+                    } else {
+                        //shooterControl1.disable();
+                        shooterControl2.disable();
+                    }
                 }
+                shooterControl1.enable();
+                
             }
             
             SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getRate());
@@ -213,7 +225,7 @@ public class Shooter extends Thread {
     } 
     
     public synchronized void Fire(int cnt) {
-        shotsRemaining = cnt;
+        shotsRemaining = cnt-1;
         if(shooterMode == STANDBY) {        
             shooterMode = SPINUP;
         }

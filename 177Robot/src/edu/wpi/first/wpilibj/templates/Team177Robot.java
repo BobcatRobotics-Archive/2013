@@ -22,8 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Team177Robot extends IterativeRobot {
     
     /** Constants to disable subsystems to facilitate testing */
-    private static final boolean enableClimber = false;
-    private static final boolean enableShooter = true;
+    private static final boolean enableClimber = true;
+    private static final boolean enableShooter = false;
     private static final boolean enableVision  = false;
     
     /** Right Joystick Buttons **/
@@ -89,8 +89,8 @@ public class Team177Robot extends IterativeRobot {
     private static final int SolenoidPickupDeploy = 7;
     
     /* Solenoids - Module 2 */
-    private static final int SolenoidClimberDeployOut = 1;  //two way solenoid
-    private static final int SolenoidClimberDeployIn = 2;
+    private static final int SolenoidClimberDeployOut = 7;  //two way solenoid
+    private static final int SolenoidClimberDeployIn = 8;
     private static final int SolenoidClimberBrake = 7;  
     
     /* Relays */
@@ -250,8 +250,7 @@ public class Team177Robot extends IterativeRobot {
      */
     public void teleopPeriodic() {
         
-        /* Climber/Drive Code */
-	
+        /* Climber/Drive Code */	
 	if(enableClimber) {
             if(!climber.isDeployed() || (!operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest))) {
                 // Regular Driving
@@ -274,8 +273,7 @@ public class Team177Robot extends IterativeRobot {
             /* Climber Deploy Toggle*/
             if(!lastDeployButton && operatorStick.getRawButton(climberDeployToggle)) {
                 climber.toggleDeploy();
-            }
-            
+            }      
             lastDeployButton = operatorStick.getRawButton(climberDeployToggle);     
             
         } else {

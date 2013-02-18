@@ -18,9 +18,13 @@ public class Climber extends Thread {
     private static final int DRIVING = 0;
     private static final int RETRACTING = 1;
     private static final int EXTENDING = 2;
-    private static final double throttle = 0.5;
-    private static final double stagelength = 36;
-    private static final double encoderThresh = 2;
+    private static final double upthrottle = 1.0;
+    private static final double downthrottle = 0.75;
+    private static final double upPosition = 72;
+    private static final double downPosition = 1;
+    private static final double encoderThresh = 0.5;
+    
+    private static final boolean UseLeftDriveTrain = false;   // Practice bot and real robot are different...
     
     Team177Robot robot;
     private int state = DRIVING;
@@ -44,12 +48,12 @@ public class Climber extends Thread {
         lowerlimit = new DigitalInput(lowerLimitSwitch);
         upperlimit = new DigitalInput(upperLimitSwitch);
         pto = new Solenoid(PTOChannel);
-        brake = new Solenoid(2, BrakeChannel);
-        deployOut = new Solenoid(2, DeployOutChannel);
-        deployIn = new Solenoid(2, DeployInChannel);
+        //brake = new Solenoid(2, BrakeChannel);
+        deployOut = new Solenoid(DeployOutChannel);
+        deployIn = new Solenoid(DeployInChannel);
 
         LiveWindow.addActuator("Climmber", "PTO", pto);
-        LiveWindow.addActuator("Climmber", "Brake", brake);
+        //LiveWindow.addActuator("Climmber", "Brake", brake);
         LiveWindow.addActuator("Climmber", "DeployIn", deployIn);
         LiveWindow.addActuator("Climmber", "DeployOut", deployOut);
         LiveWindow.addSensor("Climber", "Lower Limit", lowerlimit);
@@ -59,8 +63,8 @@ public class Climber extends Thread {
     public void run() {
         
         while (true) {            
-            SmartDashboard.putBoolean("Climber Upper Limit", upperlimit.get());
-            SmartDashboard.putBoolean("Climber Lower Limit", lowerlimit.get());            
+            SmartDashboard.putBoolean("Climber Upper Limit", !upperlimit.get());
+            SmartDashboard.putBoolean("Climber Lower Limit", !lowerlimit.get());            
             if (enabled) {
                 switch (state) {
                     case RETRACTING:
@@ -86,19 +90,33 @@ public class Climber extends Thread {
         }
     }
     
-    private void Extending() {                
-        if((Math.abs(robot.locator.getRightRaw()-stagelength) < encoderThresh) || (!upperlimit.get())) {
+    private void Extending() {  
+        
+        System.out.println("RightRaw: " + robot.locator.getRightRaw());
+        if((!UseLeftDriveTrain && Math.abs(robot.locator.getRightRaw()-upPosition) < encoderThresh) 
+                || (UseLeftDriveTrain && Math.abs(robot.locator.getLeftRaw()-upPosition) < encoderThresh)
+                || (!upperlimit.get())) {
             state = RETRACTING;
         } else {
-            robot.drive.tankDrive(0, throttle);
+            if(UseLeftDriveTrain) {
+                robot.drive.tankDrive(upthrottle, 0);
+            } else {
+                robot.drive.tankDrive(0, upthrottle);
+            }
         }
     }
     
     private void Retracting() {        
-        if((robot.locator.getRightRaw() < encoderThresh) || (!lowerlimit.get())) {
+        if((!UseLeftDriveTrain && Math.abs(robot.locator.getRightRaw() - downPosition) < encoderThresh) 
+                || (UseLeftDriveTrain && Math.abs(robot.locator.getLeftRaw() - downPosition) < encoderThresh) 
+                || (!lowerlimit.get())) {
             state = EXTENDING;
         } else {
-            robot.drive.tankDrive(0, -throttle);
+            if(UseLeftDriveTrain) {
+                robot.drive.tankDrive(-downthrottle, 0);
+            } else {
+                robot.drive.tankDrive(0, -downthrottle);
+            }
         }
         
     }
@@ -113,12 +131,12 @@ public class Climber extends Thread {
         if(on) {
             if(!pto.get()) {
                 pto.set(true);
-                brake.set(true);
+               // brake.set(true);
             } 
         } else {
             if(pto.get()) {
                 pto.set(false);
-                brake.set(false);
+               // brake.set(false);
             } 
         }
     }
@@ -138,8 +156,12 @@ public class Climber extends Thread {
     public synchronized void test(double value) {    
         if(deployOut.get() && !enabled && pto.get()) {            
             // Climber has to be deployed, and not running to test. PTO must be engaged 
-            if((value > 0.1 && upperlimit.get()) || (value < -0.1 && lowerlimit.get())) {                
-                robot.drive.tankDrive(0, value);
+            if((value < 0.1 && upperlimit.get()) || (value > -0.1 && lowerlimit.get())) {                
+                if (UseLeftDriveTrain) {
+                    robot.drive.tankDrive(-value, 0);
+                } else {
+                    robot.drive.tankDrive(0, -value);
+                }
             } else {
                 robot.drive.tankDrive(0, 0);
             }
@@ -151,7 +173,7 @@ public class Climber extends Thread {
     public synchronized void toggleDeploy() {
         if (deployOut.get()) {
             //Climber is deployed, retract it, but only if it's lowered.
-            if(lowerlimit.get()) {
+            if(!lowerlimit.get()) {
                 deployOut.set(false);
                 deployIn.set(true);
             }

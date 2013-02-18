@@ -21,8 +21,9 @@ public class Shooter extends Thread {
     
     //Timing
     private static final double shooterTimeOut = 5.0;  //seconds to try and reach speed
-    private static final double feedTime = 0.65;  //seconds to keep wheel spinning after actuating the feed mechanism
-    private static final double pinTime = 0.1;  //seconds to delay between pulling restraining pin and feeding 
+    private static final double feedTime = 0.7;  //seconds to keep wheel spinning after actuating the feed mechanism
+    private static final double pinTime = 0.05;  //seconds to delay between pulling restraining pin and feeding 
+    private static final double resetTime = 0.25; //minmum time to delay between shots
     private static final boolean shootOnTimeout = true; //shoot after shooterTimeOut seconds, even if not at speed
     
     //Speed setpoints
@@ -35,7 +36,8 @@ public class Shooter extends Thread {
     private static final int STANDBY = 0;
     private static final int SPINUP = 1;
     private static final int FEED = 2;
-    
+    private static final int RESET = 3;
+        
     private final FilteredEncoder shooterEncoder1;
     private final ShooterMotor shooterMotor1;
     private PIDController shooterControl1;
@@ -147,6 +149,15 @@ public class Shooter extends Thread {
                             /* Delay to give shooter time to complete the shot */
                             feed = false;
                             pin = false;
+                            shooterMode = RESET;
+                            shootTime = Timer.getFPGATimestamp();
+                        } else if ((Timer.getFPGATimestamp() - shootTime) > pinTime) {
+                            feed = true;
+                        }
+                        break;
+                    case RESET:
+                        //Delay between shots
+                        if ((Timer.getFPGATimestamp() - shootTime) > resetTime) {
                             if (shotsRemaining > 0 || shooting) {
                                 if (shotsRemaining > 0) {
                                     shotsRemaining--;
@@ -157,8 +168,6 @@ public class Shooter extends Thread {
                             } else {
                                 shooterMode = STANDBY;
                             }
-                        } else if ((Timer.getFPGATimestamp() - shootTime) > pinTime) {
-                            feed = true;
                         }
                         break;
                     default:
@@ -184,22 +193,21 @@ public class Shooter extends Thread {
                     }
                 } else {
                     if (spin || spinTest) {
-                        //shooterControl1.enable();
+                        shooterControl1.enable();
                         shooterControl2.enable();
                     } else {
-                        //shooterControl1.disable();
+                        shooterControl1.disable();
                         shooterControl2.disable();
                     }
                 }
-                shooterControl1.enable();
                 
             }
             
-            SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getRate());
+            SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getLastRate());
             SmartDashboard.putBoolean("Shooter 1 on", shooterControl1.isEnable());
             SmartDashboard.putNumber("Shooter 1 Cmd", shooterMotor1.shooterMotor.get());
             
-            SmartDashboard.putNumber("Shooter 2 Speed", shooterEncoder2.getRate());
+            SmartDashboard.putNumber("Shooter 2 Speed", shooterEncoder2.getLastRate());
             SmartDashboard.putBoolean("Shooter 2 on", shooterControl2.isEnable());
             SmartDashboard.putNumber("Shooter 2 Cmd", shooterMotor2.shooterMotor.get());
             

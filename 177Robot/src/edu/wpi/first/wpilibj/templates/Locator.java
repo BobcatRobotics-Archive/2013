@@ -47,6 +47,7 @@ public class Locator {
         if(updateLocation.isEnabled()) {
             updateLocation.enable(false);
             rightEncoder.reset();
+            leftEncoder.reset();
         }            
     }
     

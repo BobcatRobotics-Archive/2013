@@ -5,6 +5,7 @@
 package edu.wpi.first.wpilibj.templates;
 
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  *
@@ -18,6 +19,7 @@ public class FilteredEncoder extends Encoder {
     
     private double distanceRunningAverage[] = new double[AverageCount];
     private int distanceAverageIndex = 0;
+    private double lastRate;
     
       
    /**
@@ -42,7 +44,7 @@ public class FilteredEncoder extends Encoder {
      *
      * @return The filtered rate of the encoder.
      */
-    public double getRate() {        
+     public double getRate() {        
         double average = 0;
         rateRunningAverage[rateAverageIndex] = super.getRate();
         rateAverageIndex = (rateAverageIndex+1)%AverageCount;
@@ -50,7 +52,32 @@ public class FilteredEncoder extends Encoder {
         for (int i = 0; i < AverageCount; i++) {
             average += rateRunningAverage[i];
         }
-        return average / AverageCount;
+        lastRate = average / AverageCount;
+        return lastRate;
+    }
+     
+     public double getLastRate() {
+         return lastRate;
+     }
+    
+     /**
+     * Get the current rate of the encoder.
+     * Units are distance per second as scaled by the value from setDistancePerPulse().
+     * 
+     * Modified to use a longer period...
+     *
+     * @return The current rate of the encoder.
+     */
+    private double lastDistance;
+    private double lastTime;
+    public double getRateFromDistance() {
+        double distance = getDistance();
+        double time = Timer.getFPGATimestamp();
+        double deltaDist = lastDistance - distance;
+        double deltaTime = lastTime - time;
+        lastDistance = distance;
+        lastTime = time;
+        return deltaDist / deltaTime;
     }
     
      /**
@@ -69,5 +96,5 @@ public class FilteredEncoder extends Encoder {
         return average / AverageCount;          
      }
     
-    
+   
 }

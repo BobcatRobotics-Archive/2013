@@ -20,16 +20,16 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Shooter extends Thread {
     
     //Timing
-    private static final double shooterTimeOut = 5.0;  //seconds to try and reach speed
-    private static final double feedTime = 0.7;  //seconds to keep wheel spinning after actuating the feed mechanism
+    private static final double shooterTimeOut = 3.0;  //seconds to try and reach speed
+    private static final double feedTime = 0.5;  //seconds to keep wheel spinning after actuating the feed mechanism
     private static final double pinTime = 0.05;  //seconds to delay between pulling restraining pin and feeding 
-    private static final double resetTime = 0.25; //minmum time to delay between shots
+    private static final double resetTime = 0.05; //minmum time to delay between shots
     private static final boolean shootOnTimeout = true; //shoot after shooterTimeOut seconds, even if not at speed
     
     //Speed setpoints
-    private static final double ElevatedSetpoint1 = 5000;
+    private static final double ElevatedSetpoint1 = 2500;
     private static final double ElevatedSetpoint2 = ElevatedSetpoint1*1.2;
-    private static final double NonElevatedSetpoint1 = 5000;
+    private static final double NonElevatedSetpoint1 = 5000; ///4750;
     private static final double NonElevatedSetpoint2 = NonElevatedSetpoint1*1.2;
     
     // Mode Constants
@@ -75,15 +75,19 @@ public class Shooter extends Thread {
         shooterFeed = new Solenoid(Feed);
         shooterPin = new Solenoid(Pin);
         shooterElevation = new Solenoid(Elevation);
-
+ 
         shooterControl1 = new PIDController(-0.0001, -0.00001, 0, -0.75 / 5000.0, shooterEncoder1, shooterMotor1);
+        //shooterControl1 = new PIDController(-0.00002, 0 /*-0.000002 */, 0, -0.75 / 5000.0, shooterEncoder1, shooterMotor1);
         shooterControl1.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
         shooterControl1.setSetpoint(NonElevatedSetpoint1);
+        //shooterControl1.setOutputRange(-1, 0);
         shooterControl1.disable();
 
         shooterControl2 = new PIDController(-0.0001, -0.00001, 0, -0.75 / 5000.0, shooterEncoder2, shooterMotor2);
+        //shooterControl2 = new PIDController(-0.00002, 0 /*-0.000002*/, 0, -0.75 / 5000.0, shooterEncoder2, shooterMotor2);
         shooterControl2.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
         shooterControl2.setSetpoint(NonElevatedSetpoint2);
+        //shooterControl2.setOutputRange(-1, 0);
         shooterControl2.disable();
 
         shooterMode = STANDBY;
@@ -182,7 +186,7 @@ public class Shooter extends Thread {
                 /* Set outputs */
                 shooterFeed.set(feed || feedTest);
                 shooterPin.set(pin || feedTest);
-
+/*
                 if (false) {
                     if (spin || spinTest) {
                         shooterMotor1.shooterMotor.set(-0.2);
@@ -199,15 +203,28 @@ public class Shooter extends Thread {
                         shooterControl1.disable();
                         shooterControl2.disable();
                     }
-                }
+                }*/
                 
+                 shooterControl1.enable();
+                 shooterControl2.enable();
+                //shooterMotor1.shooterMotor.set(-0.75);
+                //shooterMotor2.shooterMotor.set(-0.75*1.2);
+                
+                        
+            } else {
+                //shooterMotor1.shooterMotor.set(0);
+                //shooterMotor2.shooterMotor.set(0);
+                shooterControl1.disable();
+                shooterControl2.disable();
             }
             
-            SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getLastRate());
+            //SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getLastRate());
+            SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getRate());
             SmartDashboard.putBoolean("Shooter 1 on", shooterControl1.isEnable());
             SmartDashboard.putNumber("Shooter 1 Cmd", shooterMotor1.shooterMotor.get());
             
-            SmartDashboard.putNumber("Shooter 2 Speed", shooterEncoder2.getLastRate());
+            //SmartDashboard.putNumber("Shooter 2 Speed", shooterEncoder2.getLastRate());
+            SmartDashboard.putNumber("Shooter 2 Speed", shooterEncoder2.getRate());
             SmartDashboard.putBoolean("Shooter 2 on", shooterControl2.isEnable());
             SmartDashboard.putNumber("Shooter 2 Cmd", shooterMotor2.shooterMotor.get());
             

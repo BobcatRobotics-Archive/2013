@@ -35,7 +35,7 @@ public class AutoModeThroughCenterBlockCenter extends AutoMode
                 break;
             case 2:
                 //Driver forward to center line
-                if(DriveTo(94.2,0,0.5)) {
+                if(DriveTo(94.2,0,1.0)) {
                     stepCount++;
                 }
                 break;

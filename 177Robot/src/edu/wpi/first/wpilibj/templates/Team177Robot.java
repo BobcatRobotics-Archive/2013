@@ -22,8 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Team177Robot extends IterativeRobot {
     
     /** Constants to disable subsystems to facilitate testing */
-    private static final boolean enableClimber = true;
-    private static final boolean enableShooter = false;
+    private static final boolean enableClimber = false;
+    private static final boolean enableShooter = true;
     private static final boolean enableVision  = false;
     
     /** Right Joystick Buttons **/
@@ -86,12 +86,12 @@ public class Team177Robot extends IterativeRobot {
     private static final int SolenoidShooterPin = 4;   
     private static final int SolenoidShooterFeed = 5;
     private static final int SolenoidShooterElevation = 6;
-    private static final int SolenoidPickupDeploy = 7;
+    private static final int SolenoidPickupDeploy = 7;  //Not used
     
     /* Solenoids - Module 2 */
     private static final int SolenoidClimberDeployOut = 7;  //two way solenoid
     private static final int SolenoidClimberDeployIn = 8;
-    private static final int SolenoidClimberBrake = 7;  
+    private static final int SolenoidClimberBrake = 7;  //Not used
     
     /* Relays */
     private static final int RelayCompressor = 1;

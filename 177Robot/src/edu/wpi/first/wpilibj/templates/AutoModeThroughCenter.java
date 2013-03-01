@@ -25,6 +25,7 @@ public class AutoModeThroughCenter extends AutoMode
 	    case 0: 
 		//Shoot 3 times
 		robot.shooter.Fire(true);
+                robot.climber.unbox();
 		//stepCount++;
 		break;
 	    default:

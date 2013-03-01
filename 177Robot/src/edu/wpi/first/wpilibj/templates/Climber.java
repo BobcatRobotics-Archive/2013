@@ -18,16 +18,22 @@ public class Climber extends Thread {
     private static final int DRIVING = 0;
     private static final int RETRACTING = 1;
     private static final int EXTENDING = 2;
+    private static final int BOX_DOWN = 3;
+    private static final int BOX_UP = 4;
+    
+    private static final int STANDBY = 99;
+    
     private static final double upthrottle = 1.0;
-    private static final double downthrottle = 0.75;
+    private static final double downthrottle = 1.0;
     private static final double upPosition = 72;
     private static final double downPosition = 1;
     private static final double encoderThresh = 0.5;
+    private static final double boxPosition = 5;
     
     private static final boolean UseLeftDriveTrain = false;   // Practice bot and real robot are different...
     
     Team177Robot robot;
-    private int state = DRIVING;
+    private int state = STANDBY;
     private boolean enabled = false;
 
     /* Limit Switches */
@@ -79,6 +85,19 @@ public class Climber extends Thread {
                         SmartDashboard.putString("Climber State", "Driving");
                         Driving();
                         break;
+                    case BOX_DOWN:
+                        //Lower climber for boxing.
+                        SmartDashboard.putString("Climber State", "Box Down");
+                        BoxDown();
+                        break;
+                    case BOX_UP:
+                        SmartDashboard.putString("Climber State", "Box Up");
+                        BoxUp();
+                        break;
+                    case STANDBY:
+                        SmartDashboard.putString("Climber State", "Standby");
+                        robot.drive.tankDrive(0,0);
+                        break;
                 }
             } else {
                SmartDashboard.putString("Climber State", "Disabled");
@@ -90,8 +109,7 @@ public class Climber extends Thread {
         }
     }
     
-    private void Extending() {  
-        
+    private void Extending() {         
         System.out.println("RightRaw: " + robot.locator.getRightRaw());
         if((!UseLeftDriveTrain && Math.abs(robot.locator.getRightRaw()-upPosition) < encoderThresh) 
                 || (UseLeftDriveTrain && Math.abs(robot.locator.getLeftRaw()-upPosition) < encoderThresh)
@@ -117,6 +135,69 @@ public class Climber extends Thread {
             } else {
                 robot.drive.tankDrive(0, -downthrottle);
             }
+        }  
+    }
+    
+    private void BoxDown() {        
+        if(!lowerlimit.get()) {
+            if (deployOut.get()) {
+                //Climber is deployed, retract it.
+                deployOut.set(false);
+                deployIn.set(true);
+            }
+            robot.locator.startClimberMode();
+            state = BOX_UP;
+        } else {
+            if(UseLeftDriveTrain) {
+                robot.drive.tankDrive(-downthrottle/2, 0);
+            } else {
+                robot.drive.tankDrive(0, -downthrottle/2);
+            }
+        }  
+    }
+    
+    private void BoxUp() {  
+        System.out.println("RightRaw: " + robot.locator.getRightRaw());
+        if((!UseLeftDriveTrain && Math.abs(robot.locator.getRightRaw()-boxPosition) < encoderThresh) 
+                || (UseLeftDriveTrain && Math.abs(robot.locator.getLeftRaw()-boxPosition) < encoderThresh)
+                || (!upperlimit.get())) {
+            enable(false);
+            state = DRIVING;
+        } else {
+            if(UseLeftDriveTrain) {
+                robot.drive.tankDrive(upthrottle/2, 0);
+            } else {
+                robot.drive.tankDrive(0, upthrottle/2);
+            }
+        }
+    }
+    
+    private boolean lastBox = false;
+    //to fit in box for start of match, climber must be slightly raised. It has to be lowered before it can be deployed.
+    //This function puts the climnber in the correct position
+    public synchronized void box() {
+        if(!lastBox) {    
+            state = BOX_DOWN;
+            setPTO(true);
+            enabled = true;
+        }      
+        lastBox = true;
+    }
+    
+   //Lower the climber for deployment.
+    public boolean unbox() {
+        if(lowerlimit.get()) {
+            setPTO(true);
+            if(UseLeftDriveTrain) {
+                robot.drive.tankDrive(-downthrottle/2, 0);
+            } else {
+                robot.drive.tankDrive(0, -downthrottle/2);
+            }
+            return false;
+        } else {
+            robot.drive.tankDrive(0, 0);
+            setPTO(false);
+            return true;
         }
         
     }
@@ -140,6 +221,7 @@ public class Climber extends Thread {
             } 
         }
     }
+    
     public synchronized void enable(boolean e) {    
         if(!e && enabled) { 
             //disable climber                
@@ -154,9 +236,10 @@ public class Climber extends Thread {
     }
     
     public synchronized void test(double value) {    
-        if(deployOut.get() && !enabled && pto.get()) {            
-            // Climber has to be deployed, and not running to test. PTO must be engaged 
-            if((value < 0.1 && upperlimit.get()) || (value > -0.1 && lowerlimit.get())) {                
+        if((deployOut.get() || value > 0) && !enabled && pto.get()) {            
+            // Climber has to be deployed, and not running to test. PTO must be engaged
+            // Climber can be lowered when retracted, but not extended.
+            if((value > 0.1 && upperlimit.get()) || (value > 0.1 && lowerlimit.get())) {                
                 if (UseLeftDriveTrain) {
                     robot.drive.tankDrive(-value, 0);
                 } else {

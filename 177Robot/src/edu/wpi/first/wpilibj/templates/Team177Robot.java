@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Team177Robot extends IterativeRobot {
     
     /** Constants to disable subsystems to facilitate testing */
-    private static final boolean enableClimber = false;
+    private static final boolean enableClimber = true;
     private static final boolean enableShooter = true;
     private static final boolean enableVision  = false;
     
@@ -252,11 +252,13 @@ public class Team177Robot extends IterativeRobot {
         
         /* Climber/Drive Code */	
 	if(enableClimber) {
-            if(!climber.isDeployed() || (!operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest))) {
+            if((!climber.isDeployed() && m_ds.getDigitalIn(missleSwitchChannel) ) 
+                    || (!operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest))) {
                 // Regular Driving
                 climber.enable(false);
                 climber.setPTO(false);
                 drive.tankDrive(leftStick, rightStick); // drive with the joysticks                        
+                //drive.tankDrive(-rightStick, -leftStick); // drive with the joysticks -Reverse Controls                   
                 shifter.set(rightStick.getRawButton(shiftButton));
             } else if (operatorStick.getRawButton(climberPTOTest)) {
                 // Climber testing
@@ -264,6 +266,8 @@ public class Team177Robot extends IterativeRobot {
                 climber.setPTO(true);    //Enable the PTO
                 shifter.set(false);      //Make sure we are in Low Gear
                 climber.test(operatorStick.getRawAxis(climberTestAxis));  //Use the stick to control the climber                
+            } else if (!m_ds.getDigitalIn(missleSwitchChannel)) {
+                climber.box();
             } else {
                 // Climber Button
                 shifter.set(false);            
@@ -275,6 +279,7 @@ public class Team177Robot extends IterativeRobot {
                 climber.toggleDeploy();
             }      
             lastDeployButton = operatorStick.getRawButton(climberDeployToggle);     
+            
             
         } else {
             drive.tankDrive(leftStick, rightStick); // drive with the joysticks 
@@ -291,8 +296,7 @@ public class Team177Robot extends IterativeRobot {
                 shooter.SetElevated(true); 
             }
         
-            /* Missle switch is just for inital testing, can be removed if needed elsewhere */
-            shooter.Fire((!m_ds.getDigitalIn(missleSwitchChannel) || operatorStick.getRawButton(shootButton)));
+            shooter.Fire(operatorStick.getRawButton(shootButton));
                 
             /* Shooter Testing */
             shooter.SpinTest(operatorStick.getRawButton(shooterTestButton)); 

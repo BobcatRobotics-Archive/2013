@@ -29,7 +29,7 @@ public class AutoModeThroughCenterBlockCenter extends AutoMode
                 //robot.shifter.set(true); //High Gear!
 		break;
             case 1:
-                if(robot.shooter.isDone()) {
+                if(robot.climber.unbox() && robot.shooter.isDone()) {
                     stepCount++;
                 }
                 break;

@@ -218,6 +218,7 @@ public class RobotDrive6 implements MotorSafety, IUtility {
         if (leftStick == null || rightStick == null) {
             throw new NullPointerException("Null HID provided");
         }
+        //tankDrive(-leftStick.getY(), -rightStick.getY(), true);
         tankDrive(leftStick.getY(), rightStick.getY(), true);
     }
 

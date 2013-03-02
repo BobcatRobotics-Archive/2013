@@ -1,3 +1,4 @@
+
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -6,6 +7,7 @@ package edu.wpi.first.wpilibj.templates;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -20,15 +22,16 @@ public class Climber extends Thread {
     private static final int EXTENDING = 2;
     private static final int BOX_DOWN = 3;
     private static final int BOX_UP = 4;
+    private static final int BOX_WAIT = 5;
     
     private static final int STANDBY = 99;
     
     private static final double upthrottle = 1.0;
     private static final double downthrottle = 1.0;
-    private static final double upPosition = 72;
-    private static final double downPosition = 1;
+    private static final double upPosition = 75;
+    private static final double downPosition = 2;
     private static final double encoderThresh = 0.5;
-    private static final double boxPosition = 5;
+    private static final double boxPosition = 10;
     
     private static final boolean UseLeftDriveTrain = false;   // Practice bot and real robot are different...
     
@@ -90,6 +93,11 @@ public class Climber extends Thread {
                         SmartDashboard.putString("Climber State", "Box Down");
                         BoxDown();
                         break;
+                    case BOX_WAIT:
+                        //delay for climber to retract
+                        SmartDashboard.putString("Climber State", "Box Wait");
+                        BoxWait();
+                        break;
                     case BOX_UP:
                         SmartDashboard.putString("Climber State", "Box Up");
                         BoxUp();
@@ -146,7 +154,8 @@ public class Climber extends Thread {
                 deployIn.set(true);
             }
             robot.locator.startClimberMode();
-            state = BOX_UP;
+            state = BOX_WAIT;
+            boxTimer = Timer.getFPGATimestamp();
         } else {
             if(UseLeftDriveTrain) {
                 robot.drive.tankDrive(-downthrottle/2, 0);
@@ -154,6 +163,14 @@ public class Climber extends Thread {
                 robot.drive.tankDrive(0, -downthrottle/2);
             }
         }  
+    }
+    
+    private double boxTimer;
+    private void BoxWait() {
+        if(Timer.getFPGATimestamp() - boxTimer > 2) {
+            state = BOX_UP;
+        }
+        robot.drive.tankDrive(0, 0);
     }
     
     private void BoxUp() {  
@@ -175,17 +192,19 @@ public class Climber extends Thread {
     private boolean lastBox = false;
     //to fit in box for start of match, climber must be slightly raised. It has to be lowered before it can be deployed.
     //This function puts the climnber in the correct position
-    public synchronized void box() {
-        if(!lastBox) {    
+    public synchronized void box(boolean box) {
+        //System.out.println("box");
+        if(box && !lastBox) {    
             state = BOX_DOWN;
             setPTO(true);
             enabled = true;
         }      
-        lastBox = true;
+        lastBox = box;
     }
     
    //Lower the climber for deployment.
     public boolean unbox() {
+        //System.out.println("Unbox");
         if(lowerlimit.get()) {
             setPTO(true);
             if(UseLeftDriveTrain) {
@@ -209,6 +228,7 @@ public class Climber extends Thread {
     }
     
     public void setPTO(boolean on) {
+        //System.out.println("setPTO: " + on);
         if(on) {
             if(!pto.get()) {
                 pto.set(true);
@@ -222,7 +242,8 @@ public class Climber extends Thread {
         }
     }
     
-    public synchronized void enable(boolean e) {    
+    public synchronized void enable(boolean e) {   
+        //System.out.println("enable "+e);
         if(!e && enabled) { 
             //disable climber                
             robot.drive.tankDrive(0, 0);
@@ -230,6 +251,9 @@ public class Climber extends Thread {
             enabled = false;            
         } else if(e && deployOut.get() && !enabled) {
             //Enable only if the climber has been deployed
+            if(state == STANDBY) {
+                state = DRIVING;
+            }
             setPTO(true);
             enabled = true;
        }        
@@ -238,8 +262,8 @@ public class Climber extends Thread {
     public synchronized void test(double value) {    
         if((deployOut.get() || value > 0) && !enabled && pto.get()) {            
             // Climber has to be deployed, and not running to test. PTO must be engaged
-            // Climber can be lowered when retracted, but not extended.
-            if((value > 0.1 && upperlimit.get()) || (value > 0.1 && lowerlimit.get())) {                
+            // Climber can be lowered when retracted, but not extended.          
+            if((value < -0.1 && upperlimit.get()) || (value > 0.1 && lowerlimit.get())) {         
                 if (UseLeftDriveTrain) {
                     robot.drive.tankDrive(-value, 0);
                 } else {

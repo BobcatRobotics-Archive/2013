@@ -33,8 +33,11 @@ public class Team177Robot extends IterativeRobot {
     private static final int omniButton = 3;  //Left Joystick button 3 is the omni
     
     /** Operator Joystick Buttons **/
-    private static final int feedTestButton = 4; 
+    private static final int feedTestButton = 10; 
     private static final int shootButton = 6; 
+    private static final int setLongShotButton = 4;
+    private static final int setShortShotButton = 3;
+    private static final int setShooterOffButton = 9;
     private static final int shooterTestButton = 8; 
     private static final int climberButton = 2;
     private static final int climberDeployToggle = 5;
@@ -242,7 +245,11 @@ public class Team177Robot extends IterativeRobot {
         if(enableShooter && shooter.isPaused()) {
             shooter.Resume();
         }
+        if(enableClimber) {
+            climber.box(false);
+        }
         locator.Reset();
+       
     } 
     
     /**
@@ -252,13 +259,13 @@ public class Team177Robot extends IterativeRobot {
         
         /* Climber/Drive Code */	
 	if(enableClimber) {
-            if((!climber.isDeployed() && m_ds.getDigitalIn(missleSwitchChannel) ) 
-                    || (!operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest))) {
+            if( m_ds.getDigitalIn(missleSwitchChannel) 
+                    && !operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest)) {
                 // Regular Driving
                 climber.enable(false);
                 climber.setPTO(false);
                 drive.tankDrive(leftStick, rightStick); // drive with the joysticks                        
-                //drive.tankDrive(-rightStick, -leftStick); // drive with the joysticks -Reverse Controls                   
+                //drive.tankDrive(rightStick, leftStick); // drive with the joysticks -Reverse Controls  Must change RobotDrive6.TankDrive as well                 
                 shifter.set(rightStick.getRawButton(shiftButton));
             } else if (operatorStick.getRawButton(climberPTOTest)) {
                 // Climber testing
@@ -267,7 +274,7 @@ public class Team177Robot extends IterativeRobot {
                 shifter.set(false);      //Make sure we are in Low Gear
                 climber.test(operatorStick.getRawAxis(climberTestAxis));  //Use the stick to control the climber                
             } else if (!m_ds.getDigitalIn(missleSwitchChannel)) {
-                climber.box();
+                climber.box(true);
             } else {
                 // Climber Button
                 shifter.set(false);            
@@ -285,6 +292,7 @@ public class Team177Robot extends IterativeRobot {
             drive.tankDrive(leftStick, rightStick); // drive with the joysticks 
             shifter.set(rightStick.getRawButton(shiftButton));
         }
+
                        
         omni.set(leftStick.getRawButton(omniButton));
 
@@ -297,6 +305,16 @@ public class Team177Robot extends IterativeRobot {
             }
         
             shooter.Fire(operatorStick.getRawButton(shootButton));
+            
+            if(operatorStick.getRawButton(setLongShotButton)) {
+                shooter.SetLong();
+            }
+            if(operatorStick.getRawButton(setShortShotButton)) {
+                shooter.SetShort();
+            }
+            if(operatorStick.getRawButton(setShooterOffButton)) {
+                shooter.SetOff();
+            }
                 
             /* Shooter Testing */
             shooter.SpinTest(operatorStick.getRawButton(shooterTestButton)); 

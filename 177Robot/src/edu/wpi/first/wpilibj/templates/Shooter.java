@@ -20,17 +20,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Shooter extends Thread {
     
     //Timing
-    private static final double shooterTimeOut = 3.0;  //seconds to try and reach speed
+    private static final double shooterTimeOut = 0.5;  //seconds to try and reach speed
     private static final double feedTime = 0.5;  //seconds to keep wheel spinning after actuating the feed mechanism
     private static final double pinTime = 0.05;  //seconds to delay between pulling restraining pin and feeding 
     private static final double resetTime = 0.05; //minmum time to delay between shots
     private static final boolean shootOnTimeout = true; //shoot after shooterTimeOut seconds, even if not at speed
     
     //Speed setpoints
-    private static final double ElevatedSetpoint1 = 2500;
-    private static final double ElevatedSetpoint2 = ElevatedSetpoint1*1.2;
-    private static final double NonElevatedSetpoint1 = 5000; ///4750;
-    private static final double NonElevatedSetpoint2 = NonElevatedSetpoint1*1.2;
+    private static final double ElevatedSetpoint1 = -0.14;//5300;//2500;
+    private static final double ElevatedSetpoint2 = ElevatedSetpoint1*1;
+    private static final double NonElevatedSetpoint1 = -0.6; //5300; ///4750;
+    private static final double NonElevatedSetpoint2 = NonElevatedSetpoint1*1;
+    private static final double LongSetpoint1 = -0.7; //5300; ///4750;
+    private static final double LongSetpoint2 = LongSetpoint1*1;
+    
+    private double MotorSetpoint1 = NonElevatedSetpoint1;
+    private double MotorSetpoint2 = NonElevatedSetpoint2;
     
     // Mode Constants
     private static final int STANDBY = 0;
@@ -76,14 +81,14 @@ public class Shooter extends Thread {
         shooterPin = new Solenoid(Pin);
         shooterElevation = new Solenoid(Elevation);
  
-        shooterControl1 = new PIDController(-0.0001, -0.00001, 0, -0.75 / 5000.0, shooterEncoder1, shooterMotor1);
+        shooterControl1 = new PIDController(-0.0001, -0.00001, 0, -1 / 5000.0, shooterEncoder1, shooterMotor1);
         //shooterControl1 = new PIDController(-0.00002, 0 /*-0.000002 */, 0, -0.75 / 5000.0, shooterEncoder1, shooterMotor1);
         shooterControl1.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
         shooterControl1.setSetpoint(NonElevatedSetpoint1);
         //shooterControl1.setOutputRange(-1, 0);
         shooterControl1.disable();
 
-        shooterControl2 = new PIDController(-0.0001, -0.00001, 0, -0.75 / 5000.0, shooterEncoder2, shooterMotor2);
+        shooterControl2 = new PIDController(-0.0001, -0.00001, 0, -1 / 5000.0, shooterEncoder2, shooterMotor2);
         //shooterControl2 = new PIDController(-0.00002, 0 /*-0.000002*/, 0, -0.75 / 5000.0, shooterEncoder2, shooterMotor2);
         shooterControl2.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
         shooterControl2.setSetpoint(NonElevatedSetpoint2);
@@ -205,17 +210,21 @@ public class Shooter extends Thread {
                     }
                 }*/
                 
-                 shooterControl1.enable();
-                 shooterControl2.enable();
-                //shooterMotor1.shooterMotor.set(-0.75);
-                //shooterMotor2.shooterMotor.set(-0.75*1.2);
+                // shooterControl1.enable();
+                // shooterControl2.enable();
+                
+                //For Full court -0.65 on both
+                //pyramid -0.6
+                //pyramid goal -014
+                shooterMotor1.shooterMotor.set(MotorSetpoint1);
+                shooterMotor2.shooterMotor.set(MotorSetpoint2);
                 
                         
             } else {
-                //shooterMotor1.shooterMotor.set(0);
-                //shooterMotor2.shooterMotor.set(0);
-                shooterControl1.disable();
-                shooterControl2.disable();
+                shooterMotor1.shooterMotor.set(0);
+                shooterMotor2.shooterMotor.set(0);
+                //shooterControl1.disable();
+                //shooterControl2.disable();
             }
             
             //SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getLastRate());
@@ -262,14 +271,32 @@ public class Shooter extends Thread {
             elevated = e;        
             shooterElevation.set(e);
             if(e) {
-                shooterControl1.setSetpoint(ElevatedSetpoint1);
-                shooterControl2.setSetpoint(ElevatedSetpoint2);
+                //shooterControl1.setSetpoint(ElevatedSetpoint1);
+                //shooterControl2.setSetpoint(ElevatedSetpoint2);
+                MotorSetpoint1 = ElevatedSetpoint1;
+                MotorSetpoint2 = ElevatedSetpoint2;
             } else {
-                shooterControl1.setSetpoint(NonElevatedSetpoint1);
-                shooterControl2.setSetpoint(NonElevatedSetpoint2);
+                SetShort();
+                //shooterControl1.setSetpoint(NonElevatedSetpoint1);
+                //shooterControl2.setSetpoint(NonElevatedSetpoint2);
             }
         }
         
+    }
+    
+    public synchronized void SetLong() {
+        MotorSetpoint1 = LongSetpoint1;
+        MotorSetpoint2 = LongSetpoint2;
+    }
+    
+    public synchronized void SetShort() {
+        MotorSetpoint1 = NonElevatedSetpoint1;
+        MotorSetpoint2 = NonElevatedSetpoint2;
+    }
+    
+    public synchronized void SetOff() {
+        MotorSetpoint1 = 0;
+        MotorSetpoint2 = 0;
     }
     
     public synchronized void SpinTest(boolean test) {

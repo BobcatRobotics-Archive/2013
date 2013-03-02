@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj.Timer;
  */
 public class FilteredEncoder extends Encoder {
     
-    private final static int AverageCount = 50;
+    private final static int AverageCount = 25;
     private double rateRunningAverage[] = new double[AverageCount];
     private int rateAverageIndex = 0;
     

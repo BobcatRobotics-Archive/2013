@@ -22,9 +22,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Team177Robot extends IterativeRobot {
     
     /** Constants to disable subsystems to facilitate testing */
-    private static final boolean enableClimber = true;
-    private static final boolean enableShooter = true;
-    private static final boolean enableVision  = false;
+    static final boolean enableClimber = true;
+    static final boolean enableShooter = true;
+    static final boolean enableVision  = false;
     
     /** Right Joystick Buttons **/
     private static final int shiftButton = 3; //Right Joystick button 3 is the shifter
@@ -264,8 +264,8 @@ public class Team177Robot extends IterativeRobot {
                 // Regular Driving
                 climber.enable(false);
                 climber.setPTO(false);
-                drive.tankDrive(leftStick, rightStick); // drive with the joysticks                        
-                //drive.tankDrive(rightStick, leftStick); // drive with the joysticks -Reverse Controls  Must change RobotDrive6.TankDrive as well                 
+                //drive.tankDrive(leftStick, rightStick); // drive with the joysticks                        
+                drive.tankDrive(rightStick, leftStick); // drive with the joysticks -Reverse Controls  Must change RobotDrive6.TankDrive as well                 
                 shifter.set(rightStick.getRawButton(shiftButton));
             } else if (operatorStick.getRawButton(climberPTOTest)) {
                 // Climber testing

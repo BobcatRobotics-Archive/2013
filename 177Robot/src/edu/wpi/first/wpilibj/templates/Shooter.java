@@ -33,6 +33,8 @@ public class Shooter extends Thread {
     private static final double NonElevatedSetpoint2 = NonElevatedSetpoint1*1;
     private static final double LongSetpoint1 = -0.7; //5300; ///4750;
     private static final double LongSetpoint2 = LongSetpoint1*1;
+    private static final double DumpSetpoint1 = -0.7; 
+    private static final double DumpSetpoint2 = DumpSetpoint1*1;
     
     private double MotorSetpoint1 = NonElevatedSetpoint1;
     private double MotorSetpoint2 = NonElevatedSetpoint2;
@@ -292,6 +294,11 @@ public class Shooter extends Thread {
     public synchronized void SetShort() {
         MotorSetpoint1 = NonElevatedSetpoint1;
         MotorSetpoint2 = NonElevatedSetpoint2;
+    }
+        
+    public synchronized void SetDump() {
+        MotorSetpoint1 = DumpSetpoint1;
+        MotorSetpoint2 = DumpSetpoint2;
     }
     
     public synchronized void SetOff() {

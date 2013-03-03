@@ -230,13 +230,13 @@ public class Climber extends Thread {
     public void setPTO(boolean on) {
         //System.out.println("setPTO: " + on);
         if(on) {
-            if(!pto.get()) {
-                pto.set(true);
+            if(pto.get()) {
+                pto.set(false);
                // brake.set(true);
             } 
         } else {
-            if(pto.get()) {
-                pto.set(false);
+            if(!pto.get()) {
+                pto.set(true);
                // brake.set(false);
             } 
         }
@@ -260,7 +260,7 @@ public class Climber extends Thread {
     }
     
     public synchronized void test(double value) {    
-        if((deployOut.get() || value > 0) && !enabled && pto.get()) {            
+        if((deployOut.get() || value > 0) && !enabled && !pto.get()) {            
             // Climber has to be deployed, and not running to test. PTO must be engaged
             // Climber can be lowered when retracted, but not extended.          
             if((value < -0.1 && upperlimit.get()) || (value > 0.1 && lowerlimit.get())) {         
@@ -288,6 +288,9 @@ public class Climber extends Thread {
             //Climber is retracted, depoly it
             deployIn.set(false);
             deployOut.set(true);
+            if(robot.enableShooter) {
+                robot.shooter.SetDump();
+            }
         }
     }
     

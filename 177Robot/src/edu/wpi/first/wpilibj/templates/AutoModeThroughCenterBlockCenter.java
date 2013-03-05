@@ -46,6 +46,6 @@ public class AutoModeThroughCenterBlockCenter extends AutoMode
 
     public String getName()
     {
-	return "Shoot And Defence";
+	return "Shoot And Defend";
     }
 }

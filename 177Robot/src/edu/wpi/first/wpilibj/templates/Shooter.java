@@ -27,17 +27,15 @@ public class Shooter extends Thread {
     private static final boolean shootOnTimeout = true; //shoot after shooterTimeOut seconds, even if not at speed
     
     //Speed setpoints
-    private static final double ElevatedSetpoint1 = -0.14;//5300;//2500;
-    private static final double ElevatedSetpoint2 = ElevatedSetpoint1*1;
-    private static final double NonElevatedSetpoint1 = -0.6; //5300; ///4750;
-    private static final double NonElevatedSetpoint2 = NonElevatedSetpoint1*1;
+    private static final double PyramidSetpoint1 = -0.6; //5300; ///4750;
+    private static final double PyramidSetpoint2 = PyramidSetpoint1*1;
     private static final double LongSetpoint1 = -0.7; //5300; ///4750;
     private static final double LongSetpoint2 = LongSetpoint1*1;
-    private static final double DumpSetpoint1 = -0.7; 
+    private static final double DumpSetpoint1 = -0.07; 
     private static final double DumpSetpoint2 = DumpSetpoint1*1;
     
-    private double MotorSetpoint1 = NonElevatedSetpoint1;
-    private double MotorSetpoint2 = NonElevatedSetpoint2;
+    private double MotorSetpoint1 = PyramidSetpoint1;
+    private double MotorSetpoint2 = PyramidSetpoint2;
     
     // Mode Constants
     private static final int STANDBY = 0;
@@ -47,11 +45,11 @@ public class Shooter extends Thread {
         
     private final FilteredEncoder shooterEncoder1;
     private final ShooterMotor shooterMotor1;
-    private PIDController shooterControl1;
+//    private PIDController shooterControl1;
     
     private final FilteredEncoder shooterEncoder2;
     private final ShooterMotor shooterMotor2;
-    private PIDController shooterControl2;
+//    private PIDController shooterControl2;
     
     private final Solenoid shooterFeed;
     private final Solenoid shooterPin;
@@ -83,19 +81,19 @@ public class Shooter extends Thread {
         shooterPin = new Solenoid(Pin);
         shooterElevation = new Solenoid(Elevation);
  
-        shooterControl1 = new PIDController(-0.0001, -0.00001, 0, -1 / 5000.0, shooterEncoder1, shooterMotor1);
-        //shooterControl1 = new PIDController(-0.00002, 0 /*-0.000002 */, 0, -0.75 / 5000.0, shooterEncoder1, shooterMotor1);
-        shooterControl1.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
-        shooterControl1.setSetpoint(NonElevatedSetpoint1);
-        //shooterControl1.setOutputRange(-1, 0);
-        shooterControl1.disable();
-
-        shooterControl2 = new PIDController(-0.0001, -0.00001, 0, -1 / 5000.0, shooterEncoder2, shooterMotor2);
-        //shooterControl2 = new PIDController(-0.00002, 0 /*-0.000002*/, 0, -0.75 / 5000.0, shooterEncoder2, shooterMotor2);
-        shooterControl2.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
-        shooterControl2.setSetpoint(NonElevatedSetpoint2);
-        //shooterControl2.setOutputRange(-1, 0);
-        shooterControl2.disable();
+//        shooterControl1 = new PIDController(-0.0001, -0.00001, 0, -1 / 5000.0, shooterEncoder1, shooterMotor1);
+//        //shooterControl1 = new PIDController(-0.00002, 0 /*-0.000002 */, 0, -0.75 / 5000.0, shooterEncoder1, shooterMotor1);
+//        shooterControl1.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
+//        shooterControl1.setSetpoint(MotorSetpoint1);
+//        //shooterControl1.setOutputRange(-1, 0);
+//        shooterControl1.disable();
+//
+//        shooterControl2 = new PIDController(-0.0001, -0.00001, 0, -1 / 5000.0, shooterEncoder2, shooterMotor2);
+//        //shooterControl2 = new PIDController(-0.00002, 0 /*-0.000002*/, 0, -0.75 / 5000.0, shooterEncoder2, shooterMotor2);
+//        shooterControl2.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
+//        shooterControl2.setSetpoint(MotorSetpoint2);
+//        //shooterControl2.setOutputRange(-1, 0);
+//        shooterControl2.disable();
 
         shooterMode = STANDBY;
 
@@ -136,10 +134,11 @@ public class Shooter extends Thread {
                             shootTime = Timer.getFPGATimestamp(); //start timeout timer
                         }
 
-                        if (shooterControl1.onTarget() && shooterControl2.onTarget()) {
-                            /* Shooter at spped, shoot */
-                            shooterMode = FEED;
-                        } else if ((Timer.getFPGATimestamp() - shootTime) > shooterTimeOut) {
+//                        if (shooterControl1.onTarget() && shooterControl2.onTarget()) {
+//                            /* Shooter at spped, shoot */
+//                            shooterMode = FEED;
+//                        } else 
+                        if ((Timer.getFPGATimestamp() - shootTime) > shooterTimeOut) {
                             /* Timeout, didn't reach speed */
                             System.out.println("Shooter timed out before reaching speed");
 
@@ -231,12 +230,12 @@ public class Shooter extends Thread {
             
             //SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getLastRate());
             SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getRate());
-            SmartDashboard.putBoolean("Shooter 1 on", shooterControl1.isEnable());
+            //SmartDashboard.putBoolean("Shooter 1 on", shooterControl1.isEnable());
             SmartDashboard.putNumber("Shooter 1 Cmd", shooterMotor1.shooterMotor.get());
             
             //SmartDashboard.putNumber("Shooter 2 Speed", shooterEncoder2.getLastRate());
             SmartDashboard.putNumber("Shooter 2 Speed", shooterEncoder2.getRate());
-            SmartDashboard.putBoolean("Shooter 2 on", shooterControl2.isEnable());
+            //SmartDashboard.putBoolean("Shooter 2 on", shooterControl2.isEnable());
             SmartDashboard.putNumber("Shooter 2 Cmd", shooterMotor2.shooterMotor.get());
             
             SmartDashboard.putBoolean("Shooter feed", shooterFeed.get());
@@ -271,19 +270,13 @@ public class Shooter extends Thread {
         if(e != elevated) {
             //Change detected
             elevated = e;        
-            shooterElevation.set(e);
+            shooterElevation.set(!e); //Default position is up
             if(e) {
-                //shooterControl1.setSetpoint(ElevatedSetpoint1);
-                //shooterControl2.setSetpoint(ElevatedSetpoint2);
-                MotorSetpoint1 = ElevatedSetpoint1;
-                MotorSetpoint2 = ElevatedSetpoint2;
+                SetPyramid();
             } else {
-                SetShort();
-                //shooterControl1.setSetpoint(NonElevatedSetpoint1);
-                //shooterControl2.setSetpoint(NonElevatedSetpoint2);
+                SetLong();                
             }
-        }
-        
+        }        
     }
     
     public synchronized void SetLong() {
@@ -291,9 +284,9 @@ public class Shooter extends Thread {
         MotorSetpoint2 = LongSetpoint2;
     }
     
-    public synchronized void SetShort() {
-        MotorSetpoint1 = NonElevatedSetpoint1;
-        MotorSetpoint2 = NonElevatedSetpoint2;
+    public synchronized void SetPyramid() {
+        MotorSetpoint1 = PyramidSetpoint1;
+        MotorSetpoint2 = PyramidSetpoint2;
     }
         
     public synchronized void SetDump() {

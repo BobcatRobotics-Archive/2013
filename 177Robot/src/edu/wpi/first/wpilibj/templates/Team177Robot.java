@@ -36,7 +36,7 @@ public class Team177Robot extends IterativeRobot {
     private static final int feedTestButton = 10; 
     private static final int shootButton = 6; 
     private static final int setLongShotButton = 4;
-    private static final int setShortShotButton = 3;
+    private static final int setPyramidShotButton = 3;
     private static final int setShooterOffButton = 9;
     private static final int shooterTestButton = 8; 
     private static final int climberButton = 2;
@@ -85,16 +85,11 @@ public class Team177Robot extends IterativeRobot {
     /* Solenoids - Module 1 */
     private static final int SolenoidDriveShifter = 1;
     private static final int SolenoidClimberPTO = 2;
-    private static final int SolenoidDriveOmni = 3;
     private static final int SolenoidShooterPin = 4;   
     private static final int SolenoidShooterFeed = 5;
     private static final int SolenoidShooterElevation = 6;
-    private static final int SolenoidPickupDeploy = 7;  //Not used
-    
-    /* Solenoids - Module 2 */
     private static final int SolenoidClimberDeployOut = 7;  //two way solenoid
     private static final int SolenoidClimberDeployIn = 8;
-    private static final int SolenoidClimberBrake = 7;  //Not used
     
     /* Relays */
     private static final int RelayCompressor = 1;
@@ -149,8 +144,7 @@ public class Team177Robot extends IterativeRobot {
     /* Pnumatics */
     Compressor compressor = new Compressor(DIOPressureSwitch,RelayCompressor);  
     Solenoid shifter = new Solenoid(SolenoidDriveShifter);
-    Solenoid omni = new Solenoid(SolenoidDriveOmni);
-          
+              
     /* Automode Variables */
     int autoMode = 0;
     float autoDelay = 0;
@@ -175,8 +169,7 @@ public class Team177Robot extends IterativeRobot {
         
         if(enableClimber) {
             climber = new Climber(this, DIOclimberLowerSwitch, DIOclimberUpperSwitch,
-                                   SolenoidClimberPTO, SolenoidClimberBrake, 
-                                   SolenoidClimberDeployOut, SolenoidClimberDeployIn);
+                                   SolenoidClimberPTO, SolenoidClimberDeployOut, SolenoidClimberDeployIn);
                        
             //Start Climber
             climber.start();
@@ -209,7 +202,6 @@ public class Team177Robot extends IterativeRobot {
         LiveWindow.addActuator("Drive", "Right Mid", midRightMotor);
         LiveWindow.addActuator("Drive", "Right Rear", rearRightMotor);
         LiveWindow.addActuator("Drive", "Shifter", shifter);
-        LiveWindow.addActuator("Drive", "Omni", omni);
                         
         /* Turn on watchdog */
         //getWatchdog().setEnabled(true);
@@ -292,10 +284,7 @@ public class Team177Robot extends IterativeRobot {
             drive.tankDrive(leftStick, rightStick); // drive with the joysticks 
             shifter.set(rightStick.getRawButton(shiftButton));
         }
-
-                       
-        omni.set(leftStick.getRawButton(omniButton));
-
+                               
         if(enableShooter) {
             /* Shooter */
             if(operatorStick.getRawAxis(shooterElevateAxis) > 0) {
@@ -309,8 +298,8 @@ public class Team177Robot extends IterativeRobot {
             if(operatorStick.getRawButton(setLongShotButton)) {
                 shooter.SetLong();
             }
-            if(operatorStick.getRawButton(setShortShotButton)) {
-                shooter.SetShort();
+            if(operatorStick.getRawButton(setPyramidShotButton)) {
+                shooter.SetPyramid();
             }
             if(operatorStick.getRawButton(setShooterOffButton)) {
                 shooter.SetOff();
@@ -362,15 +351,11 @@ public class Team177Robot extends IterativeRobot {
 		 */
 		switch (autoMode)
 		{
-		    case 0:
-			auto = new AutoModeDoNothing(this);
-			break;
 		    case 1:
-			//auto = new AutoModeFromFront(this);
-			auto = new AutoModeDriveToTest(this);
+			auto = new AutoModeThroughCenter(this);
 			break;
 		    case 2:
-			auto = new AutoModeThroughCenter(this);
+			auto = new AutoModeThroughCenterBlockCenter(this);
 			break;
 		    case 3:
 			auto = new AutoMode5DiscThroughCenter(this);
@@ -382,7 +367,7 @@ public class Team177Robot extends IterativeRobot {
 			auto = new AutoModeShootFromSidePickUpFrisbees(this);
 			break;
                     case 6:
-                        auto = new AutoModeThroughCenterBlockCenter(this);
+                        auto = new AutoModeFromFront(this);			                        
                         break;
 		    default:
 			auto = new AutoModeDoNothing(this);

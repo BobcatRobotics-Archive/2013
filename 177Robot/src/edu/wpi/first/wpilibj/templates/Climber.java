@@ -45,24 +45,20 @@ public class Climber extends Thread {
     
     /* PTO */
     private Solenoid pto;
-    /* Mechanical Break */
-    private Solenoid brake;
     /* Climber Deploy - two way solinoid */
     private Solenoid deployIn;
     private Solenoid deployOut;
     
-    Climber(Team177Robot robot, int lowerLimitSwitch, int upperLimitSwitch, int PTOChannel, int BrakeChannel, int DeployOutChannel, int DeployInChannel) {
+    Climber(Team177Robot robot, int lowerLimitSwitch, int upperLimitSwitch, int PTOChannel, int DeployOutChannel, int DeployInChannel) {
         this.robot = robot;
         
         lowerlimit = new DigitalInput(lowerLimitSwitch);
         upperlimit = new DigitalInput(upperLimitSwitch);
-        pto = new Solenoid(PTOChannel);
-        //brake = new Solenoid(2, BrakeChannel);
+        pto = new Solenoid(PTOChannel);        
         deployOut = new Solenoid(DeployOutChannel);
         deployIn = new Solenoid(DeployInChannel);
 
-        LiveWindow.addActuator("Climmber", "PTO", pto);
-        //LiveWindow.addActuator("Climmber", "Brake", brake);
+        LiveWindow.addActuator("Climmber", "PTO", pto);       
         LiveWindow.addActuator("Climmber", "DeployIn", deployIn);
         LiveWindow.addActuator("Climmber", "DeployOut", deployOut);
         LiveWindow.addSensor("Climber", "Lower Limit", lowerlimit);
@@ -232,12 +228,10 @@ public class Climber extends Thread {
         if(on) {
             if(pto.get()) {
                 pto.set(false);
-               // brake.set(true);
             } 
         } else {
             if(!pto.get()) {
                 pto.set(true);
-               // brake.set(false);
             } 
         }
     }

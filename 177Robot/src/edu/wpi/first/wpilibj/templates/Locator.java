@@ -46,9 +46,9 @@ public class Locator {
         //Stop the locater thread and reset the encoder for use by the climber.
         if(updateLocation.isEnabled()) {
             updateLocation.enable(false);
-            rightEncoder.reset();
-            leftEncoder.reset();
         }            
+        rightEncoder.reset();
+        leftEncoder.reset();
     }
     
     public void startLocatorMode() {

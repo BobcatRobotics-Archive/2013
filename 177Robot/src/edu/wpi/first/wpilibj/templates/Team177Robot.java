@@ -85,6 +85,7 @@ public class Team177Robot extends IterativeRobot {
     /* Solenoids - Module 1 */
     private static final int SolenoidDriveShifter = 1;
     private static final int SolenoidClimberPTO = 2;
+    private static final int SolenoidOmni = 2;
     private static final int SolenoidShooterPin = 4;   
     private static final int SolenoidShooterFeed = 5;
     private static final int SolenoidShooterElevation = 6;
@@ -144,6 +145,7 @@ public class Team177Robot extends IterativeRobot {
     /* Pnumatics */
     Compressor compressor = new Compressor(DIOPressureSwitch,RelayCompressor);  
     Solenoid shifter = new Solenoid(SolenoidDriveShifter);
+    Solenoid omni = new Solenoid(SolenoidOmni);
               
     /* Automode Variables */
     int autoMode = 0;
@@ -213,6 +215,9 @@ public class Team177Robot extends IterativeRobot {
 	if(auto != null) {
             auto.autoInit();
         }
+        if(enableShooter) {
+            shooter.Reset();  //Shouldn't be neccisary except for testing
+        }
     }
 
     /**
@@ -234,8 +239,11 @@ public class Team177Robot extends IterativeRobot {
      * Initialization code for teleop mode should go here.
      */
     public void teleopInit() {
-        if(enableShooter && shooter.isPaused()) {
-            shooter.Resume();
+        if(enableShooter) {
+            if( shooter.isPaused()){            
+                shooter.Resume();
+            }
+            shooter.Reset();
         }
         if(enableClimber) {
             climber.box(false);
@@ -284,6 +292,8 @@ public class Team177Robot extends IterativeRobot {
             drive.tankDrive(leftStick, rightStick); // drive with the joysticks 
             shifter.set(rightStick.getRawButton(shiftButton));
         }
+        
+        omni.set(leftStick.getRawButton(omniButton));
                                
         if(enableShooter) {
             /* Shooter */

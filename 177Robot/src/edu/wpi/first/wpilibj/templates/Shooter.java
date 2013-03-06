@@ -19,23 +19,41 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Shooter extends Thread {
     
+    private static final boolean UseClosedLoop = false;
+    private static final boolean ShooterAlwaysOn = false;
+    
+    private static final double EncoderCPR = 128;
+    
     //Timing
-    private static final double shooterTimeOut = 0.5;  //seconds to try and reach speed
+    private static final double shooterTimeOut = 0.5;  //seconds to try and reach speed    
     private static final double feedTime = 0.5;  //seconds to keep wheel spinning after actuating the feed mechanism
     private static final double pinTime = 0.05;  //seconds to delay between pulling restraining pin and feeding 
     private static final double resetTime = 0.05; //minmum time to delay between shots
     private static final boolean shootOnTimeout = true; //shoot after shooterTimeOut seconds, even if not at speed
-    
+          
     //Speed setpoints
-    private static final double PyramidSetpoint1 = -0.6; //5300; ///4750;
-    private static final double PyramidSetpoint2 = PyramidSetpoint1*1;
-    private static final double LongSetpoint1 = -0.7; //5300; ///4750;
-    private static final double LongSetpoint2 = LongSetpoint1*1;
-    private static final double DumpSetpoint1 = -0.07; 
-    private static final double DumpSetpoint2 = DumpSetpoint1*1;
+    private static final double MotorRatio = 1.0;
+    private static final double PyramidSetpoint1 = -0.6;
+    private static final double PyramidSetpoint2 = PyramidSetpoint1*MotorRatio;
+    private static final double LongSetpoint1 = -0.7;
+    private static final double LongSetpoint2 = LongSetpoint1*MotorRatio;
+    private static final double DumpSetpoint1 = 0.0;//-0.07; 
+    private static final double DumpSetpoint2 = DumpSetpoint1*MotorRatio;
     
     private double MotorSetpoint1 = PyramidSetpoint1;
-    private double MotorSetpoint2 = PyramidSetpoint2;
+    private double MotorSetpoint2 = PyramidSetpoint2;      
+    
+    private static final double CLPyramidSetpoint1 = 5300; ///4750;
+    private static final double CLPyramidSetpoint2 = PyramidSetpoint1*MotorRatio;
+    private static final double CLLongSetpoint1 = 5300; ///4750;
+    private static final double CLLongSetpoint2 = LongSetpoint1*MotorRatio;
+    private static final double CLDumpSetpoint1 = 0; 
+    private static final double CLDumpSetpoint2 = DumpSetpoint1*MotorRatio;
+    
+    private static final double mP = -0.00001;
+    private static final double mI = 0;
+    private static final double mD = 0;
+    private static final double mF = -1.0/5000.0;
     
     // Mode Constants
     private static final int STANDBY = 0;
@@ -45,11 +63,11 @@ public class Shooter extends Thread {
         
     private final FilteredEncoder shooterEncoder1;
     private final ShooterMotor shooterMotor1;
-//    private PIDController shooterControl1;
+    private PIDController shooterControl1;
     
     private final FilteredEncoder shooterEncoder2;
     private final ShooterMotor shooterMotor2;
-//    private PIDController shooterControl2;
+    private PIDController shooterControl2;
     
     private final Solenoid shooterFeed;
     private final Solenoid shooterPin;
@@ -65,12 +83,12 @@ public class Shooter extends Thread {
     
     public Shooter(int Motor1, int Encoder1A, int Encoder1B, int Motor2, int Encoder2A, int Encoder2B, int Feed, int Pin, int Elevation) {
         shooterEncoder1 = new FilteredEncoder(Encoder1A, Encoder1B);
-        shooterEncoder1.setDistancePerPulse(60.0 / 128.0); //128 pulse per revolution, multiplied by 60 to RPM? - need to confirm.
+        shooterEncoder1.setDistancePerPulse(60.0 / EncoderCPR); //pulse per revolution, multiplied by 60 to RPM?
         shooterEncoder1.setPIDSourceParameter(Encoder.PIDSourceParameter.kRate);
         shooterEncoder1.start();
 
         shooterEncoder2 = new FilteredEncoder(Encoder2A, Encoder2B);
-        shooterEncoder2.setDistancePerPulse(60.0 / 128.0); //128 pulse per revolution, multiplied by 60 to RPM? - need to confirm.
+        shooterEncoder2.setDistancePerPulse(60.0 / EncoderCPR); //pulse per revolution, multiplied by 60 to RPM?
         shooterEncoder2.setPIDSourceParameter(Encoder.PIDSourceParameter.kRate);
         shooterEncoder2.start();
 
@@ -81,19 +99,17 @@ public class Shooter extends Thread {
         shooterPin = new Solenoid(Pin);
         shooterElevation = new Solenoid(Elevation);
  
-//        shooterControl1 = new PIDController(-0.0001, -0.00001, 0, -1 / 5000.0, shooterEncoder1, shooterMotor1);
-//        //shooterControl1 = new PIDController(-0.00002, 0 /*-0.000002 */, 0, -0.75 / 5000.0, shooterEncoder1, shooterMotor1);
-//        shooterControl1.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
-//        shooterControl1.setSetpoint(MotorSetpoint1);
-//        //shooterControl1.setOutputRange(-1, 0);
-//        shooterControl1.disable();
-//
-//        shooterControl2 = new PIDController(-0.0001, -0.00001, 0, -1 / 5000.0, shooterEncoder2, shooterMotor2);
-//        //shooterControl2 = new PIDController(-0.00002, 0 /*-0.000002*/, 0, -0.75 / 5000.0, shooterEncoder2, shooterMotor2);
-//        shooterControl2.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
-//        shooterControl2.setSetpoint(MotorSetpoint2);
-//        //shooterControl2.setOutputRange(-1, 0);
-//        shooterControl2.disable();
+        shooterControl1 = new PIDController(mP, mI, mD, mF, shooterEncoder1, shooterMotor1);
+        shooterControl1.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
+        shooterControl1.setSetpoint(CLPyramidSetpoint1);
+        //shooterControl1.setOutputRange(-1, 0);
+        shooterControl1.disable();
+
+        shooterControl2 = new PIDController(mP, mI, mD, mF, shooterEncoder2, shooterMotor2);
+        shooterControl2.setAbsoluteTolerance(100.0); //set Tolerance to +/- 100 RPM
+        shooterControl2.setSetpoint(CLPyramidSetpoint2);
+        //shooterControl2.setOutputRange(-1, 0);
+        shooterControl2.disable();
 
         shooterMode = STANDBY;
 
@@ -134,11 +150,10 @@ public class Shooter extends Thread {
                             shootTime = Timer.getFPGATimestamp(); //start timeout timer
                         }
 
-//                        if (shooterControl1.onTarget() && shooterControl2.onTarget()) {
-//                            /* Shooter at spped, shoot */
-//                            shooterMode = FEED;
-//                        } else 
-                        if ((Timer.getFPGATimestamp() - shootTime) > shooterTimeOut) {
+                        if (UseClosedLoop && shooterControl1.onTarget() && shooterControl2.onTarget()) {
+                            /* Shooter at spped, shoot */
+                            shooterMode = FEED;
+                        } else if ((Timer.getFPGATimestamp() - shootTime) > shooterTimeOut) {
                             /* Timeout, didn't reach speed */
                             System.out.println("Shooter timed out before reaching speed");
 
@@ -192,50 +207,61 @@ public class Shooter extends Thread {
                 /* Set outputs */
                 shooterFeed.set(feed || feedTest);
                 shooterPin.set(pin || feedTest);
-/*
-                if (false) {
-                    if (spin || spinTest) {
-                        shooterMotor1.shooterMotor.set(-0.2);
-                        shooterMotor2.shooterMotor.set(-0.0);
+
+                if(!ShooterAlwaysOn) {
+                    if(UseClosedLoop) {
+                        if (spin || spinTest) {
+                            shooterControl1.enable();
+                            shooterControl2.enable();
+                        } else {
+                            shooterControl1.disable();
+                            shooterControl2.disable();
+                        }
                     } else {
-                        shooterMotor1.shooterMotor.set(0);
-                        shooterMotor2.shooterMotor.set(0);
+                        if (spin || spinTest) {
+                            shooterMotor1.shooterMotor.set(MotorSetpoint1);
+                            shooterMotor2.shooterMotor.set(MotorSetpoint2);                        
+                        } else {
+                            shooterMotor1.shooterMotor.set(0);
+                            shooterMotor2.shooterMotor.set(0);   
+                        }
                     }
                 } else {
-                    if (spin || spinTest) {
+                    if(UseClosedLoop) {
                         shooterControl1.enable();
                         shooterControl2.enable();
                     } else {
-                        shooterControl1.disable();
-                        shooterControl2.disable();
+                        //For Full court -0.65 on both
+                        //pyramid -0.6
+                        //pyramid goal -014
+                        shooterMotor1.shooterMotor.set(MotorSetpoint1);
+                        shooterMotor2.shooterMotor.set(MotorSetpoint2);
                     }
-                }*/
-                
-                // shooterControl1.enable();
-                // shooterControl2.enable();
-                
-                //For Full court -0.65 on both
-                //pyramid -0.6
-                //pyramid goal -014
-                shooterMotor1.shooterMotor.set(MotorSetpoint1);
-                shooterMotor2.shooterMotor.set(MotorSetpoint2);
-                
-                        
+                }
+                                      
             } else {
-                shooterMotor1.shooterMotor.set(0);
-                shooterMotor2.shooterMotor.set(0);
-                //shooterControl1.disable();
-                //shooterControl2.disable();
+                //shooterMotor1.shooterMotor.set(0);
+                //shooterMotor2.shooterMotor.set(0);
+                if(UseClosedLoop) {
+                    shooterControl1.disable();
+                    shooterControl2.disable();
+                }
             }
             
-            //SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getLastRate());
-            SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getRate());
-            //SmartDashboard.putBoolean("Shooter 1 on", shooterControl1.isEnable());
+            if(UseClosedLoop) {
+                SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getLastRate());
+            } else {
+                SmartDashboard.putNumber("Shooter 1 Speed", shooterEncoder1.getRate());
+            }
+            SmartDashboard.putBoolean("Shooter 1 on", shooterControl1.isEnable());
             SmartDashboard.putNumber("Shooter 1 Cmd", shooterMotor1.shooterMotor.get());
             
-            //SmartDashboard.putNumber("Shooter 2 Speed", shooterEncoder2.getLastRate());
-            SmartDashboard.putNumber("Shooter 2 Speed", shooterEncoder2.getRate());
-            //SmartDashboard.putBoolean("Shooter 2 on", shooterControl2.isEnable());
+            if(UseClosedLoop) {
+                SmartDashboard.putNumber("Shooter 2 Speed", shooterEncoder2.getLastRate());
+            } else {
+                SmartDashboard.putNumber("Shooter 2 Speed", shooterEncoder2.getRate());
+            }
+            SmartDashboard.putBoolean("Shooter 2 on", shooterControl2.isEnable());
             SmartDashboard.putNumber("Shooter 2 Cmd", shooterMotor2.shooterMotor.get());
             
             SmartDashboard.putBoolean("Shooter feed", shooterFeed.get());
@@ -266,6 +292,12 @@ public class Shooter extends Thread {
         }
     } 
     
+    public synchronized void Reset() {
+        shooterMode = STANDBY;
+        shotsRemaining = 0;
+        SetPyramid();
+    }
+    
     public synchronized void SetElevated(boolean e) {
         if(e != elevated) {
             //Change detected
@@ -279,17 +311,24 @@ public class Shooter extends Thread {
         }        
     }
     
-    public synchronized void SetLong() {
+    public synchronized void SetLong() {      
+        shooterControl1.setSetpoint(CLLongSetpoint1);
+        shooterControl2.setSetpoint(CLLongSetpoint2);
+
         MotorSetpoint1 = LongSetpoint1;
         MotorSetpoint2 = LongSetpoint2;
     }
     
     public synchronized void SetPyramid() {
+        shooterControl1.setSetpoint(CLPyramidSetpoint1);
+        shooterControl2.setSetpoint(CLPyramidSetpoint2);
         MotorSetpoint1 = PyramidSetpoint1;
         MotorSetpoint2 = PyramidSetpoint2;
     }
         
     public synchronized void SetDump() {
+        shooterControl1.setSetpoint(CLDumpSetpoint1);
+        shooterControl2.setSetpoint(CLDumpSetpoint2);
         MotorSetpoint1 = DumpSetpoint1;
         MotorSetpoint2 = DumpSetpoint2;
     }

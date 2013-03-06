@@ -34,6 +34,7 @@ public class Climber extends Thread {
     private static final double boxPosition = 10;
     
     private static final boolean UseLeftDriveTrain = false;   // Practice bot and real robot are different...
+    private static final boolean UseRightDriveTrain = true;   // Practice bot and real robot are different...
     
     Team177Robot robot;
     private int state = STANDBY;
@@ -100,7 +101,7 @@ public class Climber extends Thread {
                         break;
                     case STANDBY:
                         SmartDashboard.putString("Climber State", "Standby");
-                        robot.drive.tankDrive(0,0);
+                        SetClimber(0);
                         break;
                 }
             } else {
@@ -113,6 +114,21 @@ public class Climber extends Thread {
         }
     }
     
+    private void SetClimber(double value) {
+        double left, right;
+        if(UseLeftDriveTrain) {
+            left = value;
+        } else {
+            left = 0;
+        }
+        if(UseRightDriveTrain) {
+            right = value;
+        } else {
+            right = 0;
+        }
+        robot.drive.tankDrive(left, right);
+    }
+    
     private void Extending() {         
         System.out.println("RightRaw: " + robot.locator.getRightRaw());
         if((!UseLeftDriveTrain && Math.abs(robot.locator.getRightRaw()-upPosition) < encoderThresh) 
@@ -120,11 +136,7 @@ public class Climber extends Thread {
                 || (!upperlimit.get())) {
             state = RETRACTING;
         } else {
-            if(UseLeftDriveTrain) {
-                robot.drive.tankDrive(upthrottle, 0);
-            } else {
-                robot.drive.tankDrive(0, upthrottle);
-            }
+            SetClimber(upthrottle);
         }
     }
     
@@ -134,11 +146,7 @@ public class Climber extends Thread {
                 || (!lowerlimit.get())) {
             state = EXTENDING;
         } else {
-            if(UseLeftDriveTrain) {
-                robot.drive.tankDrive(-downthrottle, 0);
-            } else {
-                robot.drive.tankDrive(0, -downthrottle);
-            }
+            SetClimber(-downthrottle);
         }  
     }
     
@@ -153,11 +161,7 @@ public class Climber extends Thread {
             state = BOX_WAIT;
             boxTimer = Timer.getFPGATimestamp();
         } else {
-            if(UseLeftDriveTrain) {
-                robot.drive.tankDrive(-downthrottle/2, 0);
-            } else {
-                robot.drive.tankDrive(0, -downthrottle/2);
-            }
+            SetClimber(-downthrottle/2);
         }  
     }
     
@@ -165,8 +169,8 @@ public class Climber extends Thread {
     private void BoxWait() {
         if(Timer.getFPGATimestamp() - boxTimer > 2) {
             state = BOX_UP;
-        }
-        robot.drive.tankDrive(0, 0);
+        }        
+        SetClimber(0);
     }
     
     private void BoxUp() {  
@@ -177,11 +181,7 @@ public class Climber extends Thread {
             enable(false);
             state = DRIVING;
         } else {
-            if(UseLeftDriveTrain) {
-                robot.drive.tankDrive(upthrottle/2, 0);
-            } else {
-                robot.drive.tankDrive(0, upthrottle/2);
-            }
+            SetClimber(upthrottle/2);
         }
     }
     
@@ -202,19 +202,14 @@ public class Climber extends Thread {
     public boolean unbox() {
         //System.out.println("Unbox");
         if(lowerlimit.get()) {
-            setPTO(true);
-            if(UseLeftDriveTrain) {
-                robot.drive.tankDrive(-downthrottle/2, 0);
-            } else {
-                robot.drive.tankDrive(0, -downthrottle/2);
-            }
+            setPTO(true);            
+            SetClimber(-downthrottle/2);
             return false;
-        } else {
-            robot.drive.tankDrive(0, 0);
+        } else {            
+            SetClimber(0);
             setPTO(false);
             return true;
-        }
-        
+        }        
     }
     
     private void Driving() {
@@ -240,7 +235,7 @@ public class Climber extends Thread {
         //System.out.println("enable "+e);
         if(!e && enabled) { 
             //disable climber                
-            robot.drive.tankDrive(0, 0);
+            SetClimber(0);
             setPTO(false);
             enabled = false;            
         } else if(e && deployOut.get() && !enabled) {
@@ -258,16 +253,12 @@ public class Climber extends Thread {
             // Climber has to be deployed, and not running to test. PTO must be engaged
             // Climber can be lowered when retracted, but not extended.          
             if((value < -0.1 && upperlimit.get()) || (value > 0.1 && lowerlimit.get())) {         
-                if (UseLeftDriveTrain) {
-                    robot.drive.tankDrive(-value, 0);
-                } else {
-                    robot.drive.tankDrive(0, -value);
-                }
+                SetClimber(-value);                
             } else {
-                robot.drive.tankDrive(0, 0);
+                SetClimber(0);
             }
         } else {
-	    robot.drive.tankDrive(0, 0);
+	    SetClimber(0);
 	}
     }
         

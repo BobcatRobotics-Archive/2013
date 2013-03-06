@@ -19,13 +19,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Shooter extends Thread {
     
-    private static final boolean UseClosedLoop = false;
+    private static final boolean UseClosedLoop = true;
     private static final boolean ShooterAlwaysOn = false;
     
     private static final double EncoderCPR = 128;
     
     //Timing
-    private static final double shooterTimeOut = 0.5;  //seconds to try and reach speed    
+    private static final double shooterTimeOut = 2; //0.5;  //seconds to try and reach speed    
     private static final double feedTime = 0.5;  //seconds to keep wheel spinning after actuating the feed mechanism
     private static final double pinTime = 0.05;  //seconds to delay between pulling restraining pin and feeding 
     private static final double resetTime = 0.05; //minmum time to delay between shots
@@ -50,9 +50,9 @@ public class Shooter extends Thread {
     private static final double CLDumpSetpoint1 = 0; 
     private static final double CLDumpSetpoint2 = DumpSetpoint1*MotorRatio;
     
-    private static final double mP = -0.00001;
-    private static final double mI = 0;
-    private static final double mD = 0;
+    private static final double mP = -0.0001;
+    private static final double mI = -0.0002;
+    private static final double mD = -0.00001;
     private static final double mF = -1.0/5000.0;
     
     // Mode Constants
@@ -148,6 +148,8 @@ public class Shooter extends Thread {
                         if (!spin) {
                             spin = true;
                             shootTime = Timer.getFPGATimestamp(); //start timeout timer
+                            shooterEncoder1.resetStoredData();
+                            //shooterEncoder2.resetStoredData();
                         }
 
                         if (UseClosedLoop && shooterControl1.onTarget() && shooterControl2.onTarget()) {
@@ -193,6 +195,8 @@ public class Shooter extends Thread {
                             } else {
                                 shooterMode = STANDBY;
                             }
+                            shooterEncoder1.dumpStoredData();
+                            //shooterEncoder2.dumpStoredData();
                         }
                         break;
                     default:

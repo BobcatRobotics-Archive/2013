@@ -13,13 +13,17 @@ import edu.wpi.first.wpilibj.Timer;
  */
 public class FilteredEncoder extends Encoder {
     
-    private final static int AverageCount = 25;
+    private final static int AverageCount = 5;
     private double rateRunningAverage[] = new double[AverageCount];
     private int rateAverageIndex = 0;
     
     private double distanceRunningAverage[] = new double[AverageCount];
     private int distanceAverageIndex = 0;
     private double lastRate;
+    
+    private static final int StorageSize = (int)(2/0.05); //2 seconds worth of data
+    private double[] DataStore;  
+    private int DataIndex = 0;
     
       
    /**
@@ -35,6 +39,8 @@ public class FilteredEncoder extends Encoder {
             rateRunningAverage[i] = 0;
             distanceRunningAverage[i] = 0;
         }
+        
+        DataStore = new double[StorageSize];
     }
     
    /**
@@ -47,14 +53,32 @@ public class FilteredEncoder extends Encoder {
      public double getRate() {        
         double average = 0;
         rateRunningAverage[rateAverageIndex] = super.getRate();
+        
+        if(DataIndex < StorageSize) {
+            DataStore[DataIndex++] = rateRunningAverage[rateAverageIndex];
+        } 
+        
         rateAverageIndex = (rateAverageIndex+1)%AverageCount;
         
         for (int i = 0; i < AverageCount; i++) {
             average += rateRunningAverage[i];
         }
         lastRate = average / AverageCount;
+                       
         return lastRate;
     }
+    
+    public void dumpStoredData() {
+        for(int i = 0; i < StorageSize; i++) {
+            System.out.print(DataStore[i]+ ",");
+        }
+        System.out.println("");
+    }
+    
+    public void resetStoredData() {
+        DataIndex = 0;
+    }
+     
      
      public double getLastRate() {
          return lastRate;
@@ -94,7 +118,6 @@ public class FilteredEncoder extends Encoder {
             average += distanceRunningAverage[i];
         }
         return average / AverageCount;          
-     }
-    
+     }   
    
 }

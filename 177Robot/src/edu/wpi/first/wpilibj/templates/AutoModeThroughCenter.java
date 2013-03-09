@@ -24,10 +24,13 @@ public class AutoModeThroughCenter extends AutoMode
 	{
 	    case 0: 
 		//Shoot 3 times
-		robot.shooter.Fire(true);
-                robot.climber.unbox();
-		//stepCount++;
+		robot.shooter.Fire(10);
+                //robot.climber.unbox();
+		stepCount++;
 		break;
+            case 1:
+                robot.climber.unbox();
+                break;
 	    default:
 		robot.drive.tankDrive(0.0,0.0);
 	}

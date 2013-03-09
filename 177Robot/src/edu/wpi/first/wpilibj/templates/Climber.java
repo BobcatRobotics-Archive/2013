@@ -33,7 +33,7 @@ public class Climber extends Thread {
     private static final double encoderThresh = 0.5;
     private static final double boxPosition = 10;
     
-    private static final boolean UseLeftDriveTrain = false;   // Practice bot and real robot are different...
+    private static final boolean UseLeftDriveTrain = true;   // Practice bot and real robot are different...
     private static final boolean UseRightDriveTrain = true;   // Practice bot and real robot are different...
     
     Team177Robot robot;
@@ -59,9 +59,9 @@ public class Climber extends Thread {
         deployOut = new Solenoid(DeployOutChannel);
         deployIn = new Solenoid(DeployInChannel);
 
-        LiveWindow.addActuator("Climmber", "PTO", pto);       
-        LiveWindow.addActuator("Climmber", "DeployIn", deployIn);
-        LiveWindow.addActuator("Climmber", "DeployOut", deployOut);
+        LiveWindow.addActuator("Climber", "PTO", pto);       
+        LiveWindow.addActuator("Climber", "DeployIn", deployIn);
+        LiveWindow.addActuator("Climber", "DeployOut", deployOut);
         LiveWindow.addSensor("Climber", "Lower Limit", lowerlimit);
         LiveWindow.addSensor("Climber", "Upper Limit", upperlimit);
     }

@@ -21,7 +21,7 @@ public class FilteredEncoder extends Encoder {
     private int distanceAverageIndex = 0;
     private double lastRate;
     
-    private static final int StorageSize = (int)(2/0.05); //2 seconds worth of data
+    private static final int StorageSize = (int)(5/0.05); //2 seconds worth of data
     private double[] DataStore;  
     private int DataIndex = 0;
     
@@ -36,6 +36,17 @@ public class FilteredEncoder extends Encoder {
         super(aChannel, bChannel, false);
         
          for(int i = 0; i < AverageCount; i++) {            
+            rateRunningAverage[i] = 0;
+            distanceRunningAverage[i] = 0;
+        }
+        
+        DataStore = new double[StorageSize];
+    }
+    
+    public FilteredEncoder(final int aChannel, final int bChannel, boolean reverseDirection, final EncodingType encodingType) {
+        super(aChannel, bChannel, false, encodingType);
+        
+        for(int i = 0; i < AverageCount; i++) {            
             rateRunningAverage[i] = 0;
             distanceRunningAverage[i] = 0;
         }

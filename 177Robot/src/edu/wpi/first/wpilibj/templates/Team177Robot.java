@@ -85,7 +85,7 @@ public class Team177Robot extends IterativeRobot {
     /* Solenoids - Module 1 */
     private static final int SolenoidDriveShifter = 1;
     private static final int SolenoidClimberPTO = 2;
-    private static final int SolenoidOmni = 2;
+    private static final int SolenoidOmni = 3;
     private static final int SolenoidShooterPin = 4;   
     private static final int SolenoidShooterFeed = 5;
     private static final int SolenoidShooterElevation = 6;

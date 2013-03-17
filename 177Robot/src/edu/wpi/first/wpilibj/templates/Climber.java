@@ -28,7 +28,7 @@ public class Climber extends Thread {
     
     private static final double upthrottle = 1.0;
     private static final double downthrottle = 1.0;
-    private static final double upPosition = 75;
+    private static final double upPosition = 38;
     private static final double downPosition = 2;
     private static final double encoderThresh = 0.5;
     private static final double boxPosition = 10;
@@ -130,11 +130,11 @@ public class Climber extends Thread {
     }
     
     private void Extending() {         
-        System.out.println("RightRaw: " + robot.locator.getRightRaw());
+        System.out.println("RightRaw: " + robot.locator.getRightRaw() +" LeftRaw: " +robot.locator.getLeftRaw());
         if((!UseLeftDriveTrain && Math.abs(robot.locator.getRightRaw()-upPosition) < encoderThresh) 
                 || (UseLeftDriveTrain && Math.abs(robot.locator.getLeftRaw()-upPosition) < encoderThresh)
-                || (!upperlimit.get())) {
-            state = RETRACTING;
+                || (!upperlimit.get())) {    
+            state = STANDBY;
         } else {
             SetClimber(upthrottle);
         }
@@ -212,9 +212,13 @@ public class Climber extends Thread {
         }        
     }
     
+    private boolean inClimberMode = false;
     private void Driving() {
         //TODO: Check for pyramid contact
-        robot.locator.startClimberMode();
+        if(!inClimberMode) {
+            robot.locator.startClimberMode();
+            inClimberMode = true;
+        }
         state = EXTENDING;
     }
     
@@ -249,6 +253,9 @@ public class Climber extends Thread {
     }
     
     public synchronized void test(double value) {    
+        System.out.println("RightRaw: " + robot.locator.getRightRaw() +" LeftRaw: " +robot.locator.getLeftRaw());
+        
+        
         if((deployOut.get() || value > 0) && !enabled && !pto.get()) {            
             // Climber has to be deployed, and not running to test. PTO must be engaged
             // Climber can be lowered when retracted, but not extended.          
@@ -273,9 +280,9 @@ public class Climber extends Thread {
             //Climber is retracted, depoly it
             deployIn.set(false);
             deployOut.set(true);
-            if(robot.enableShooter) {
-                robot.shooter.SetDump();
-            }
+            //if(robot.enableShooter) {
+            //    robot.shooter.SetDump();
+            //}
         }
     }
     

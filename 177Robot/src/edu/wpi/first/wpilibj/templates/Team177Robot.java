@@ -71,10 +71,10 @@ public class Team177Robot extends IterativeRobot {
     
     /* Digital IO */
     private static final int DIOPressureSwitch = 1;
-    private static final int DIOLeftEncoderA = 5;
-    private static final int DIOLeftEncoderB = 4;    
-    private static final int DIORightEncoderA = 3;
-    private static final int DIORightEncoderB = 2;    
+    private static final int DIOLeftEncoderA = 4;
+    private static final int DIOLeftEncoderB = 5;    
+    private static final int DIORightEncoderA = 2;
+    private static final int DIORightEncoderB = 3;    
     private static final int DIOshooterEncoder1A = 7;
     private static final int DIOshooterEncoder1B = 6;    
     private static final int DIOshooterEncoder2A = 9;

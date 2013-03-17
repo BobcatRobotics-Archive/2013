@@ -16,7 +16,7 @@ public class Locator {
     private final EnhancedGyro headingGyro;
     private final Encoder leftEncoder;
     private final Encoder rightEncoder;
-    private final UpdateLocation updateLocation;
+    public final UpdateLocation updateLocation;
     
     public Locator(int leftEncoderA, int leftEncoderB, int rightEncoderA, int rightEncoderB, int gyroChannel) {
         headingGyro = new EnhancedGyro(gyroChannel);

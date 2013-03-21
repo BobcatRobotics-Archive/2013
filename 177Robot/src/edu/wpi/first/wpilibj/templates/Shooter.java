@@ -23,8 +23,9 @@ public class Shooter extends Thread {
     private static final boolean UseClosedLoop = true;
     private static final boolean ShooterAlwaysOn = true;
     
-    private static final double EncoderCPR = 64;//128;
-    private static final double SpeedThreshold = 300;
+    private static final double EncoderCPR = 128; //Practice Bot
+    //private static final double EncoderCPR = 64;  //Real Robot
+    private static final double SpeedThreshold = 100; //300; 
     
     //Timing
     private static final double shooterTimeOut = 1.0;  //seconds to try and reach speed    
@@ -45,9 +46,9 @@ public class Shooter extends Thread {
     private double MotorSetpoint1 = PyramidSetpoint1;
     private double MotorSetpoint2 = PyramidSetpoint2;      
     
-    private static final double CLPyramidSetpoint1 = 5000; //4750;
-    private static final double CLPyramidSetpoint2 = 4200; //CLPyramidSetpoint1*MotorRatio;
-    private static final double CLLongSetpoint1 = 4500; ///4750;
+    private static final double CLPyramidSetpoint1 = 5000;//WPI 5000; //4750;
+    private static final double CLPyramidSetpoint2 = 5000; //WPI 4200; //CLPyramidSetpoint1*MotorRatio;
+    private static final double CLLongSetpoint1 = 6000; ///4750;
     private static final double CLLongSetpoint2 = CLLongSetpoint1*MotorRatio;
     private static final double CLDumpSetpoint1 = 0; 
     private static final double CLDumpSetpoint2 = CLDumpSetpoint1*MotorRatio;

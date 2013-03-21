@@ -34,7 +34,7 @@ public class Climber extends Thread {
     private static final double boxPosition = 10;
     
     private static final boolean UseLeftDriveTrain = true;   // Practice bot and real robot are different...
-    private static final boolean UseRightDriveTrain = true;   // Practice bot and real robot are different...
+    private static final boolean UseRightDriveTrain = false;   // Practice bot and real robot are different...
     
     Team177Robot robot;
     private int state = STANDBY;
@@ -200,7 +200,11 @@ public class Climber extends Thread {
     
    //Lower the climber for deployment.
     public boolean unbox() {
+        return true;
+        
         //System.out.println("Unbox");
+        /*
+         
         if(lowerlimit.get()) {
             setPTO(true);            
             SetClimber(-downthrottle/2);
@@ -209,7 +213,8 @@ public class Climber extends Thread {
             SetClimber(0);
             setPTO(false);
             return true;
-        }        
+        }
+        */
     }
     
     private boolean inClimberMode = false;
@@ -237,19 +242,19 @@ public class Climber extends Thread {
     
     public synchronized void enable(boolean e) {   
         //System.out.println("enable "+e);
-        if(!e && enabled) { 
-            //disable climber                
-            SetClimber(0);
-            setPTO(false);
-            enabled = false;            
-        } else if(e && deployOut.get() && !enabled) {
-            //Enable only if the climber has been deployed
-            if(state == STANDBY) {
-                state = DRIVING;
-            }
-            setPTO(true);
-            enabled = true;
-       }        
+//        if(!e && enabled) { 
+//            //disable climber                
+//            SetClimber(0);
+//            setPTO(false);
+//            enabled = false;            
+//        } else if(e && deployOut.get() && !enabled) {
+//            //Enable only if the climber has been deployed
+//            if(state == STANDBY) {
+//                state = DRIVING;
+//            }
+//            setPTO(true);
+//            enabled = true;
+//       }        
     }
     
     public synchronized void test(double value) {    
@@ -259,7 +264,8 @@ public class Climber extends Thread {
         if((deployOut.get() || value > 0) && !enabled && !pto.get()) {            
             // Climber has to be deployed, and not running to test. PTO must be engaged
             // Climber can be lowered when retracted, but not extended.          
-            if((value < -0.1 && upperlimit.get()) || (value > 0.1 && lowerlimit.get())) {         
+            //if((value < -0.1 && upperlimit.get()) || (value > 0.1 && lowerlimit.get())) { 
+            if(value < -0.1 || value > 0.1 ) { 
                 SetClimber(-value);                
             } else {
                 SetClimber(0);
@@ -272,10 +278,10 @@ public class Climber extends Thread {
     public synchronized void toggleDeploy() {
         if (deployOut.get()) {
             //Climber is deployed, retract it, but only if it's lowered.
-            if(!lowerlimit.get()) {
+            //if(!lowerlimit.get()) {
                 deployOut.set(false);
                 deployIn.set(true);
-            }
+           // }
         } else {
             //Climber is retracted, depoly it
             deployIn.set(false);

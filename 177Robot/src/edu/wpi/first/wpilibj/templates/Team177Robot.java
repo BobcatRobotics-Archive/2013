@@ -79,13 +79,12 @@ public class Team177Robot extends IterativeRobot {
     private static final int DIOshooterEncoder1B = 6;    
     private static final int DIOshooterEncoder2A = 9;
     private static final int DIOshooterEncoder2B = 8;
-    private static final int DIOclimberLowerSwitch = 10;
-    private static final int DIOclimberUpperSwitch = 11;
+    private static final int DIOclimberHookSwitch = 10;
     
     /* Solenoids - Module 1 */
     private static final int SolenoidDriveShifter = 1;
     private static final int SolenoidClimberPTO = 2;
-    private static final int SolenoidOmni = 3;
+    private static final int SolenoidClimberHook = 3;
     private static final int SolenoidShooterPin = 4;   
     private static final int SolenoidShooterFeed = 5;
     private static final int SolenoidShooterElevation = 6;
@@ -145,7 +144,7 @@ public class Team177Robot extends IterativeRobot {
     /* Pnumatics */
     Compressor compressor = new Compressor(DIOPressureSwitch,RelayCompressor);  
     Solenoid shifter = new Solenoid(SolenoidDriveShifter);
-    Solenoid omni = new Solenoid(SolenoidOmni);
+   //Solenoid omni = new Solenoid(SolenoidOmni);
               
     /* Automode Variables */
     int autoMode = 0;
@@ -170,8 +169,7 @@ public class Team177Robot extends IterativeRobot {
         }
         
         if(enableClimber) {
-            climber = new Climber(this, DIOclimberLowerSwitch, DIOclimberUpperSwitch,
-                                   SolenoidClimberPTO, SolenoidClimberDeployOut, SolenoidClimberDeployIn);
+            climber = new Climber(this, DIOclimberHookSwitch, SolenoidClimberPTO, SolenoidClimberDeployOut, SolenoidClimberDeployIn, SolenoidClimberHook);
                        
             //Start Climber
             climber.start();
@@ -244,10 +242,7 @@ public class Team177Robot extends IterativeRobot {
                 shooter.Resume();
             }
             shooter.Reset();
-        }
-        if(enableClimber) {
-            climber.box(false);
-        }
+        }        
         locator.Reset();
        
     } 
@@ -274,7 +269,8 @@ public class Team177Robot extends IterativeRobot {
                 shifter.set(false);      //Make sure we are in Low Gear
                 climber.test(operatorStick.getRawAxis(climberTestAxis));  //Use the stick to control the climber                
             } else if (!m_ds.getDigitalIn(missleSwitchChannel)) {
-                climber.box(true);
+                shifter.set(false);            
+                climber.enable(true);
             } else {
                 // Climber Button
                 shifter.set(false);            
@@ -293,7 +289,7 @@ public class Team177Robot extends IterativeRobot {
             shifter.set(rightStick.getRawButton(shiftButton));
         }
         
-        omni.set(leftStick.getRawButton(omniButton));
+        //omni.set(leftStick.getRawButton(omniButton));
                                
         if(enableShooter) {
             /* Shooter */
@@ -367,10 +363,10 @@ public class Team177Robot extends IterativeRobot {
 		    case 2:
 			auto = new AutoModeThroughCenterBlockCenter(this);
 			break;
-		    case 3:
-			auto = new AutoMode5DiscThroughCenter(this);
-			break;
 		    case 4:
+			auto = new AutoModeThroughCenterDriveToFeeder(this);
+			break;
+/*		    case 4:
 			auto = new AutoModeShootFromSide(this);
 			break;
 		    case 5:
@@ -379,6 +375,7 @@ public class Team177Robot extends IterativeRobot {
                     case 6:
                         auto = new AutoModeFromFront(this);			                        
                         break;
+ */
 		    default:
 			auto = new AutoModeDoNothing(this);
 			break;

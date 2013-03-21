@@ -23,19 +23,19 @@ public class AutoModeThroughCenterBlockCenter extends AutoMode
 	switch(stepCount)
 	{
 	    case 0: 
-		//Shoot 3 times
-		robot.shooter.Fire(3);                
+		//Shoot 6 times
+		robot.shooter.Fire(6);                
 		stepCount++;
                 //robot.shifter.set(true); //High Gear!
 		break;
             case 1:
-                if(robot.climber.unbox() && robot.shooter.isDone()) {
+                if(robot.shooter.isDone()) {
                     stepCount++;
                 }
                 break;
             case 2:
                 //Driver forward to center line
-                if(DriveTo(94.2,0,1.0)) {
+                if(DriveTo(108,0,1.0)) {  //was 94.2
                     stepCount++;
                 }
                 break;

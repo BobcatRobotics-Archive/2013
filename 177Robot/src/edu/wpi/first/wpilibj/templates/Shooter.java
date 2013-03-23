@@ -29,8 +29,8 @@ public class Shooter extends Thread {
     
     //Timing
     private static final double shooterTimeOut = 1.0;  //seconds to try and reach speed    
-    private static final double feedTime = 0.2; //0.5; //seconds to keep wheel spinning after actuating the feed mechanism
-    private static final double pinTime = 0.05;  //seconds to delay between pulling restraining pin and feeding 
+    private static final double feedTime = 0.1; //0.5; //seconds to keep wheel spinning after actuating the feed mechanism
+    private static final double pinTime = 0.1;  //seconds to delay between pulling restraining pin and feeding 
     private static final double resetTime = 0.05; //minmum time to delay between shots
     private static final boolean shootOnTimeout = true; //shoot after shooterTimeOut seconds, even if not at speed
           

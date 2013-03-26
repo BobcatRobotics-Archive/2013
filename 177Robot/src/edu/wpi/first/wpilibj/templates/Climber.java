@@ -53,7 +53,7 @@ public class Climber extends Thread {
         pto = new Solenoid(PTOChannel);        
         deployOut = new Solenoid(DeployOutChannel);
         deployIn = new Solenoid(DeployInChannel);
-        hook = new Solenoid(HookChannel);
+        hook = new Solenoid(2,HookChannel);
 
         LiveWindow.addActuator("Climber", "PTO", pto);       
         LiveWindow.addActuator("Climber", "DeployIn", deployIn);

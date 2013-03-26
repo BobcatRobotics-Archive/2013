@@ -30,7 +30,7 @@ public class Team177Robot extends IterativeRobot {
     private static final int shiftButton = 3; //Right Joystick button 3 is the shifter
 
     /** Left Joystick Buttons **/
-    private static final int omniButton = 3;  //Left Joystick button 3 is the omni
+    private static final int pegButton = 3;  //Left Joystick button 3 is the peg leg
     
     /** Operator Joystick Buttons **/
     private static final int feedTestButton = 10; 
@@ -44,6 +44,7 @@ public class Team177Robot extends IterativeRobot {
     private static final int climberTestAxis = 2; //??
     private static final int climberPTOTest = 1;
     private static final int shooterElevateAxis = 6; //Up/down on digital pad
+    private static final int stiffArmButton = 7;
 
     /** Driver station Digital Channels **/
     // Automode switches are channels 1-3
@@ -84,12 +85,17 @@ public class Team177Robot extends IterativeRobot {
     /* Solenoids - Module 1 */
     private static final int SolenoidDriveShifter = 1;
     private static final int SolenoidClimberPTO = 2;
-    private static final int SolenoidClimberHook = 3;
+    private static final int SolenoidPegLeg = 3;
     private static final int SolenoidShooterPin = 4;   
     private static final int SolenoidShooterFeed = 5;
     private static final int SolenoidShooterElevation = 6;
     private static final int SolenoidClimberDeployOut = 7;  //two way solenoid
     private static final int SolenoidClimberDeployIn = 8;
+    
+    /* Solenoids - Module 2 */
+    private static final int SolenoidStiffArm = 1;
+    private static final int SolenoidClimberHook = 3;
+    
     
     /* Relays */
     private static final int RelayCompressor = 1;
@@ -144,7 +150,8 @@ public class Team177Robot extends IterativeRobot {
     /* Pnumatics */
     Compressor compressor = new Compressor(DIOPressureSwitch,RelayCompressor);  
     Solenoid shifter = new Solenoid(SolenoidDriveShifter);
-   //Solenoid omni = new Solenoid(SolenoidOmni);
+    Solenoid peg = new Solenoid(SolenoidPegLeg);
+    Solenoid stiffarm = new Solenoid(2, SolenoidStiffArm);
               
     /* Automode Variables */
     int autoMode = 0;
@@ -153,6 +160,7 @@ public class Team177Robot extends IterativeRobot {
     
     /* State Variables */
     boolean lastDeployButton = false;
+    boolean lastStiffArmButton = false;
     
     /**
      * This function is run when the robot is first started up and should be
@@ -202,6 +210,9 @@ public class Team177Robot extends IterativeRobot {
         LiveWindow.addActuator("Drive", "Right Mid", midRightMotor);
         LiveWindow.addActuator("Drive", "Right Rear", rearRightMotor);
         LiveWindow.addActuator("Drive", "Shifter", shifter);
+        
+        LiveWindow.addActuator("misc", "Peg", peg);
+        LiveWindow.addActuator("misc", "StiffArm", stiffarm);
                         
         /* Turn on watchdog */
         //getWatchdog().setEnabled(true);
@@ -290,7 +301,17 @@ public class Team177Robot extends IterativeRobot {
             shifter.set(rightStick.getRawButton(shiftButton));
         }
         
-        //omni.set(leftStick.getRawButton(omniButton));
+        peg.set(leftStick.getRawButton(pegButton));
+        
+        /* Stiff Arm Deploy Toggle*/
+        if(!lastStiffArmButton && operatorStick.getRawButton(stiffArmButton)) {
+            if(stiffarm.get()) {
+                stiffarm.set(false);
+            } else {
+                stiffarm.set(true);
+            }               
+        }      
+        lastStiffArmButton = operatorStick.getRawButton(stiffArmButton);     
                                
         if(enableShooter) {
             /* Shooter */
@@ -364,7 +385,10 @@ public class Team177Robot extends IterativeRobot {
 		    case 2:
 			auto = new AutoModeThroughCenterBlockCenter(this);
 			break;
-		    case 4:
+		    case 3:
+			auto = new AutoModeCornerDriveToFeeder(this);
+			break;
+                    case 4:
 			auto = new AutoModeThroughCenterDriveToFeeder(this);
 			break;
 /*		    case 4:

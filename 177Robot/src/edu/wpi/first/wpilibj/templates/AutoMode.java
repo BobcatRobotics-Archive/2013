@@ -29,8 +29,8 @@ public abstract class AutoMode {
     private static double DriveMax = 1;   //Max Saturation value for control
     private static double DriveMin = -1;  //Min Saturation value for control
     
-    private static double SteerP = 0.02;  //Preportial gain for Steering System
-    private static double SteerI = 0.01;  //Integral gain for Steering System
+    private static double SteerP = 0.01; //0.02;  //Preportial gain for Steering System
+    private static double SteerI = 0.01; //0.01 //Integral gain for Steering System
     private static double SteerD = 0.00;  //Derivative gain for Steering System
     private static double SteerMax = 1;   //Max Saturation value for control
     private static double SteerMin = -1;  //Min Saturation value for control
@@ -116,7 +116,7 @@ public abstract class AutoMode {
         if (bearing > 180) {
             bearing = bearing - 360; //Quicker to turn the other direction
         }
-        
+        System.out.println("bearing: "+bearing);
         /* Steering PID Control */
         steer = SteerPID.calculate(bearing, dT);
         //System.out.println("BEARING: "+bearing);
@@ -134,7 +134,7 @@ public abstract class AutoMode {
         //System.out.println("STEER: "+steer);
         robot.drive.tankDrive(drive+steer, drive-steer);
                 
-        if((distance < DriveMargin) || (Math.abs(targetHeading) < SteerMargin && speed == 0 )) {
+        if((distance < DriveMargin) || (Math.abs(bearing) < SteerMargin && speed == 0 )) {
             return true;
         } else {
             return false;

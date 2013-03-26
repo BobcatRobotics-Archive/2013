@@ -20,12 +20,13 @@ public class AutoModeThroughCenterDriveToFeeder extends AutoMode
 
     public void autoPeriodic()
     {
+        System.out.println("stepcount:" +stepCount);
 	switch(stepCount)
 	{
 	    case 0: 
 		//Shoot 3 times
 		robot.shooter.Fire(6);                
-		stepCount++;
+                stepCount++;
                 //robot.shifter.set(true); //High Gear!
 		break;
             case 1:
@@ -35,19 +36,19 @@ public class AutoModeThroughCenterDriveToFeeder extends AutoMode
                 break;
             case 2:
                 //Driver forward toward center line
-                if(DriveTo(58,0,1.0)) {
+                if(DriveTo(34,0,1.0)) { //58
                     stepCount++;
                 }
                 break;
             case 3:
                 //Turn to left
-                if(DriveTo(108,138,0)) {
+                if(DriveTo(58,100,0)) {//138
                     stepCount++;
                 }
                 break;
             case 4:
                 //Driver forward toword edge of field
-                if(DriveTo(108,138,1.0)) {
+                if(DriveTo(58,100,1.0)) {
                     stepCount++;
                 }
                 break;                

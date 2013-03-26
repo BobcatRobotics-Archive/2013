@@ -216,6 +216,7 @@ public class Team177Robot extends IterativeRobot {
         if(enableShooter) {
             shooter.Reset();  //Shouldn't be neccisary except for testing
         }
+        climber.setPTO(false);
     }
 
     /**

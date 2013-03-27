@@ -155,7 +155,7 @@ public class Climber extends Thread {
     public synchronized void test(double value) {    
         System.out.println("RightRaw: " + robot.locator.getRightRaw() +" LeftRaw: " +robot.locator.getLeftRaw());
               
-        if((deployOut.get() || value > 0) && !enabled && !pto.get()) {            
+        if(/*(deployOut.get() || value > 0) &&*/ !enabled && !pto.get()) {            
             if(value < -0.1 || value > 0.1 ) { 
                 SetClimber(-value);                
             } else {

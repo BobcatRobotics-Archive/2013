@@ -267,14 +267,14 @@ public class Team177Robot extends IterativeRobot {
         /* Climber/Drive Code */	
 	if(enableClimber) {
             if( m_ds.getDigitalIn(missleSwitchChannel) 
-                    && !operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest)) {
+                    && !operatorStick.getRawButton(climberButton) && !leftStick.getRawButton(pegButton) /*operatorStick.getRawButton(climberPTOTest)*/) {
                 // Regular Driving
                 climber.enable(false);
                 climber.setPTO(false);
                 //drive.tankDrive(leftStick, rightStick); // drive with the joysticks                        
                 drive.tankDrive(rightStick, leftStick); // drive with the joysticks -Reverse Controls  Must change RobotDrive6.TankDrive as well                 
                 shifter.set(rightStick.getRawButton(shiftButton));
-            } else if (operatorStick.getRawButton(climberPTOTest)) {
+            } else if (leftStick.getRawButton(pegButton) /*operatorStick.getRawButton(climberPTOTest)*/) {
                 // Climber testing
                 climber.enable(false);   //Disable the climber logic
                 climber.setPTO(true);    //Enable the PTO
@@ -301,7 +301,7 @@ public class Team177Robot extends IterativeRobot {
             shifter.set(rightStick.getRawButton(shiftButton));
         }
         
-        peg.set(leftStick.getRawButton(pegButton));
+        //peg.set(leftStick.getRawButton(pegButton));
         
         /* Stiff Arm Deploy Toggle*/
         if(!lastStiffArmButton && operatorStick.getRawButton(stiffArmButton)) {

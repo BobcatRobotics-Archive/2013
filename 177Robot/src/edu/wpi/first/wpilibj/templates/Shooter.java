@@ -47,7 +47,7 @@ public class Shooter extends Thread {
     private double MotorSetpoint2 = PyramidSetpoint2;      
     
     private static final double CLPyramidSetpoint1 = 5000;//WPI 5000; //4750;
-    private static final double CLPyramidSetpoint2 = 5000; //WPI 4200; //CLPyramidSetpoint1*MotorRatio;
+    private static final double CLPyramidSetpoint2 = 4700; //5000; //WPI 4200; //CLPyramidSetpoint1*MotorRatio;
     private static final double CLLongSetpoint1 = 6000; ///4750;
     private static final double CLLongSetpoint2 = CLLongSetpoint1*MotorRatio;
     private static final double CLDumpSetpoint1 = 0; 

@@ -36,28 +36,28 @@ public class AutoModeThroughCenterDriveToFeeder extends AutoMode
                 break;
             case 2:
                 //Driver forward toward center line
-                if(DriveTo(34,0,1.0)) { //58
+                if(DriveTo(50,0,1.0)) { //58
                     stepCount++;
                 }
-                break;
+                break; 
             case 3:
-                //Turn to left
-                if(DriveTo(58,100,0)) {//138
+            /*    //Turn to left
+                if(DriveTo(100,100,0)) {//138
                     stepCount++;
                 }
                 break;
-            case 4:
+            case 4:*/
                 //Driver forward toword edge of field
-                if(DriveTo(58,100,1.0)) {
+                if(DriveTo(120,100,1.0)) {
                     stepCount++;
                 }
                 break;                
-            case 5:
+           /* case 5:
                 //Turn to face feeder station
                 if(DriveTo(380,148,0)) {
                     stepCount++;
                 }
-                break;                                
+                break;*/                                
             default:
 		robot.drive.tankDrive(0.0,0.0);
 	}

@@ -20,8 +20,8 @@ public abstract class AutoMode {
     BasicPIDController SteerPID;
     
     /* Variables & Constants used for DriveTo PID Controls */ 
-    private static double SteerMargin = 3.0; //Margin to consider robot facing target (degrees)
-    private static double DriveMargin = 1.0; //Margin to consider the robot at target (in)
+    private static double SteerMargin = 5.0; //Margin to consider robot facing target (degrees)
+    private static double DriveMargin = 10.0; //Margin to consider the robot at target (in)
     
     private static double DriveP = 0.25;  //Preportial gain for Drive System
     private static double DriveI = 0.0;   //Integral gain for Drive System
@@ -102,9 +102,10 @@ public abstract class AutoMode {
         double deltaY = y - robot.locator.GetY();
         double distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
         //System.out.println("DeltaX: "+deltaX+"  DeltaY: "+deltaY);
+        System.out.println("Distance: " + distance);
         //determine angle to target relative to field
         double targetHeading = Math.toDegrees(MathUtils.atan2(deltaY, deltaX));  // +/- 180 degrees
-        //System.out.println("Target Heading: "+targetHeading);
+        System.out.println("Target Heading: "+targetHeading);
         if(speed < 0) {
             //reverse heading if going backwards
             targetHeading += 180;
@@ -116,7 +117,7 @@ public abstract class AutoMode {
         if (bearing > 180) {
             bearing = bearing - 360; //Quicker to turn the other direction
         }
-        System.out.println("bearing: "+bearing);
+        //System.out.println("bearing: "+bearing);
         /* Steering PID Control */
         steer = SteerPID.calculate(bearing, dT);
         //System.out.println("BEARING: "+bearing);
@@ -133,6 +134,7 @@ public abstract class AutoMode {
         //System.out.println("DRIVE: "+drive);
         //System.out.println("STEER: "+steer);
         robot.drive.tankDrive(drive+steer, drive-steer);
+
                 
         if((distance < DriveMargin) || (Math.abs(bearing) < SteerMargin && speed == 0 )) {
             return true;

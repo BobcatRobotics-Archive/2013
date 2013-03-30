@@ -135,8 +135,8 @@ public class Locator {
                     right = rightEncoder.getDistance();
                     /* Average the two encoder values */
                     /* TODO - posiably add error checking to detect a failed encoder and ignore it */
-                    //distance = ((left - lastLeft) + (right - lastRight)) / 2.0;
-                    distance = (right-lastRight ); //left encoder doesn't work on 2012 drivetrain                               
+                    distance = ((left - lastLeft) + (right - lastRight)) / 2.0;
+                    //distance = (right-lastRight ); //left encoder doesn't work on 2012 drivetrain                               
                     heading = headingGyro.GetHeading();
 
                     /* Do fancy trig stuff */

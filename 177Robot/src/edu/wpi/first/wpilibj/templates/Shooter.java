@@ -23,15 +23,15 @@ public class Shooter extends Thread {
     private static final boolean UseClosedLoop = true;
     private static final boolean ShooterAlwaysOn = true;
     
-    private static final double EncoderCPR = 128; //Practice Bot
-    //private static final double EncoderCPR = 64;  //Real Robot
+    //private static final double EncoderCPR = 128; //Practice Bot
+    private static final double EncoderCPR = 64;  //Real Robot
     private static final double SpeedThreshold = 100; //300; 
     
     //Timing
-    private static final double shooterTimeOut = 1.0;  //seconds to try and reach speed    
+    private static final double shooterTimeOut = 3.0;  //seconds to try and reach speed    
     private static final double feedTime = 0.1; //0.5; //seconds to keep wheel spinning after actuating the feed mechanism
     private static final double pinTime = 0.1;  //seconds to delay between pulling restraining pin and feeding 
-    private static final double resetTime = 0.05; //minmum time to delay between shots
+    private static final double resetTime = 0.1; //minmum time to delay between shots
     private static final boolean shootOnTimeout = true; //shoot after shooterTimeOut seconds, even if not at speed
           
     //Speed setpoints
@@ -42,16 +42,20 @@ public class Shooter extends Thread {
     private static final double LongSetpoint2 = LongSetpoint1*MotorRatio;
     private static final double DumpSetpoint1 = 0.0;//-0.07; 
     private static final double DumpSetpoint2 = DumpSetpoint1*MotorRatio;
+    private static final double CornerSetpoint1 = -0.5; //0.0;//-0.07; 
+    private static final double CornerSetpoint2 = CornerSetpoint1*MotorRatio;
     
     private double MotorSetpoint1 = PyramidSetpoint1;
     private double MotorSetpoint2 = PyramidSetpoint2;      
     
     private static final double CLPyramidSetpoint1 = 5000;//WPI 5000; //4750;
     private static final double CLPyramidSetpoint2 = 4700; //5000; //WPI 4200; //CLPyramidSetpoint1*MotorRatio;
-    private static final double CLLongSetpoint1 = 6000; ///4750;
+    private static final double CLLongSetpoint1 = 5500; ///4750;
     private static final double CLLongSetpoint2 = CLLongSetpoint1*MotorRatio;
     private static final double CLDumpSetpoint1 = 0; 
     private static final double CLDumpSetpoint2 = CLDumpSetpoint1*MotorRatio;
+    private static final double CLCornerSetpoint1 = 5000;  //5000 
+    private static final double CLCornerSetpoint2 = 4300;  //4300
     
     private static final double mP = -0.003;
     private static final double mI = -0.006;//-0.0002;
@@ -84,7 +88,12 @@ public class Shooter extends Thread {
     private boolean shooterPaused = false;
     private boolean shooting = false;
     
-    public Shooter(int Motor1, int Encoder1A, int Encoder1B, int Motor2, int Encoder2A, int Encoder2B, int Feed, int Pin, int Elevation) {
+    Team177Robot robot;
+    
+    public Shooter(Team177Robot robot, int Motor1, int Encoder1A, int Encoder1B, int Motor2, int Encoder2A, int Encoder2B, int Feed, int Pin, int Elevation) {
+        
+        this.robot = robot;
+        
         shooterEncoder1 = new FilteredEncoder(Encoder1A, Encoder1B, false, CounterBase.EncodingType.k1X);
         shooterEncoder1.setDistancePerPulse(60.0 / EncoderCPR); //pulse per revolution, multiplied by 60 to RPM?
         shooterEncoder1.setPIDSourceParameter(Encoder.PIDSourceParameter.kRate);
@@ -310,6 +319,7 @@ public class Shooter extends Thread {
             //Change detected
             elevated = e;        
             shooterElevation.set(!e); //Default position is up
+            //robot.peg.set(!e);
             if(e) {
                 SetPyramid();
             } else {
@@ -332,7 +342,15 @@ public class Shooter extends Thread {
         MotorSetpoint1 = PyramidSetpoint1;
         MotorSetpoint2 = PyramidSetpoint2;
     }
+
         
+    public synchronized void SetCorner() {
+        shooterControl1.setSetpoint(CLCornerSetpoint1);
+        shooterControl2.setSetpoint(CLCornerSetpoint2);
+        MotorSetpoint1 = CornerSetpoint1;
+        MotorSetpoint2 = CornerSetpoint2;
+    }
+    
     public synchronized void SetDump() {
         shooterControl1.setSetpoint(CLDumpSetpoint1);
         shooterControl2.setSetpoint(CLDumpSetpoint2);

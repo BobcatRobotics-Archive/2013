@@ -23,7 +23,9 @@ public class AutoModeCornerDriveToFeeder extends AutoMode
 		switch(stepCount)
 	{
 	    case 0: 
+                robot.shooter.SetCorner();
 		//Shoot 6 times
+                robot.peg.set(true);
 		robot.shooter.Fire(6);                
 		stepCount++;
                 //robot.shifter.set(true); //High Gear!
@@ -31,20 +33,22 @@ public class AutoModeCornerDriveToFeeder extends AutoMode
             case 1:
                 if(robot.shooter.isDone()) {
                     stepCount++;
+                    robot.peg.set(false);
+                    robot.shooter.SetPyramid();
                 }
                 break;
             case 2:
                 //Driver forward to center line
-                if(DriveTo(108,0,1.0)) {  //was 94.2
+                if(DriveTo(90,0,1.0)) {  //was 94.2
                     stepCount++;
                 }
                 break;
-            case 3:
+            /*case 3:
                 //Turn to driver station
                 if(DriveTo(108+130,-75,0.0)) {
                     stepCount++;
                 }
-                break;    
+                break;*/    
 	    default:
 		robot.drive.tankDrive(0.0,0.0);
 	}

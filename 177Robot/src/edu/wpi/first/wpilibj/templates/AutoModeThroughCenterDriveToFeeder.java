@@ -25,6 +25,7 @@ public class AutoModeThroughCenterDriveToFeeder extends AutoMode
 	{
 	    case 0: 
 		//Shoot 3 times
+                robot.peg.set(true);
 		robot.shooter.Fire(6);                
                 stepCount++;
                 //robot.shifter.set(true); //High Gear!
@@ -32,6 +33,7 @@ public class AutoModeThroughCenterDriveToFeeder extends AutoMode
             case 1:
                 if(robot.shooter.isDone()) {
                     stepCount++;
+                    robot.peg.set(false);
                 }
                 break;
             case 2:

@@ -30,7 +30,7 @@ public class Team177Robot extends IterativeRobot {
     private static final int shiftButton = 3; //Right Joystick button 3 is the shifter
 
     /** Left Joystick Buttons **/
-    private static final int pegButton = 3;  //Left Joystick button 3 is the peg leg
+    private static final int stiffArmButton = 3;  //Left Joystick button 3 is stiff arm
     
     /** Operator Joystick Buttons **/
     private static final int feedTestButton = 10; 
@@ -44,8 +44,8 @@ public class Team177Robot extends IterativeRobot {
     private static final int climberTestAxis = 2; //??
     private static final int climberPTOTest = 1;
     private static final int shooterElevateAxis = 6; //Up/down on digital pad
-    private static final int stiffArmButton = 7;
-
+    private static final int pegLegButton = 7;
+    
     /** Driver station Digital Channels **/
     // Automode switches are channels 1-3
     private static final int firstAutoSwitchChannel = 1;
@@ -72,10 +72,10 @@ public class Team177Robot extends IterativeRobot {
     
     /* Digital IO */
     private static final int DIOPressureSwitch = 1;
-    private static final int DIOLeftEncoderA = 4;
-    private static final int DIOLeftEncoderB = 5;    
-    private static final int DIORightEncoderA = 2;
-    private static final int DIORightEncoderB = 3;    
+    private static final int DIOLeftEncoderA = 5;
+    private static final int DIOLeftEncoderB = 4;    
+    private static final int DIORightEncoderA = 3;
+    private static final int DIORightEncoderB = 2;    
     private static final int DIOshooterEncoder1A = 7;
     private static final int DIOshooterEncoder1B = 6;    
     private static final int DIOshooterEncoder2A = 9;
@@ -93,8 +93,8 @@ public class Team177Robot extends IterativeRobot {
     private static final int SolenoidClimberDeployIn = 8;
     
     /* Solenoids - Module 2 */
-    private static final int SolenoidStiffArm = 1;
     private static final int SolenoidClimberHook = 3;
+    private static final int SolenoidStiffArm = 1;
     
     
     /* Relays */
@@ -151,7 +151,7 @@ public class Team177Robot extends IterativeRobot {
     Compressor compressor = new Compressor(DIOPressureSwitch,RelayCompressor);  
     Solenoid shifter = new Solenoid(SolenoidDriveShifter);
     Solenoid peg = new Solenoid(SolenoidPegLeg);
-    Solenoid stiffarm = new Solenoid(2, SolenoidStiffArm);
+    Solenoid stiffarm = new Solenoid(2,SolenoidStiffArm);
               
     /* Automode Variables */
     int autoMode = 0;
@@ -168,7 +168,7 @@ public class Team177Robot extends IterativeRobot {
      */
     public void robotInit() {       
         if(enableShooter) {
-            shooter = new Shooter(MotorShooter1, DIOshooterEncoder1A, DIOshooterEncoder1B, 
+            shooter = new Shooter(this, MotorShooter1, DIOshooterEncoder1A, DIOshooterEncoder1B, 
                         MotorShooter2, DIOshooterEncoder2A, DIOshooterEncoder2B, 
                         SolenoidShooterFeed, SolenoidShooterPin, SolenoidShooterElevation);
            
@@ -211,7 +211,7 @@ public class Team177Robot extends IterativeRobot {
         LiveWindow.addActuator("Drive", "Right Rear", rearRightMotor);
         LiveWindow.addActuator("Drive", "Shifter", shifter);
         
-        LiveWindow.addActuator("misc", "Peg", peg);
+        //LiveWindow.addActuator("misc", "Peg", peg);
         LiveWindow.addActuator("misc", "StiffArm", stiffarm);
                         
         /* Turn on watchdog */
@@ -228,6 +228,7 @@ public class Team177Robot extends IterativeRobot {
             shooter.Reset();  //Shouldn't be neccisary except for testing
         }
         climber.setPTO(false);
+        peg.set(true);
     }
 
     /**
@@ -256,7 +257,7 @@ public class Team177Robot extends IterativeRobot {
             shooter.Reset();
         }        
         locator.Reset();
-       
+        peg.set(false);
     } 
     
     /**
@@ -266,15 +267,16 @@ public class Team177Robot extends IterativeRobot {
         
         /* Climber/Drive Code */	
 	if(enableClimber) {
-            if( m_ds.getDigitalIn(missleSwitchChannel) 
-                    && !operatorStick.getRawButton(climberButton) && !leftStick.getRawButton(pegButton) /*operatorStick.getRawButton(climberPTOTest)*/) {
+            
+            //if( m_ds.getDigitalIn(missleSwitchChannel) 
+            //        && !operatorStick.getRawButton(climberButton) && !operatorStick.getRawButton(climberPTOTest)) {
                 // Regular Driving
                 climber.enable(false);
                 climber.setPTO(false);
                 //drive.tankDrive(leftStick, rightStick); // drive with the joysticks                        
                 drive.tankDrive(rightStick, leftStick); // drive with the joysticks -Reverse Controls  Must change RobotDrive6.TankDrive as well                 
                 shifter.set(rightStick.getRawButton(shiftButton));
-            } else if (leftStick.getRawButton(pegButton) /*operatorStick.getRawButton(climberPTOTest)*/) {
+            /*} else if (operatorStick.getRawButton(climberPTOTest)) {
                 // Climber testing
                 climber.enable(false);   //Disable the climber logic
                 climber.setPTO(true);    //Enable the PTO
@@ -287,10 +289,10 @@ public class Team177Robot extends IterativeRobot {
                 // Climber Button
                 shifter.set(false);            
                 climber.enable(true);
-            }            
+            } */           
             
             /* Climber Deploy Toggle*/
-            if(!lastDeployButton && operatorStick.getRawButton(climberDeployToggle)) {
+            if(!lastDeployButton && (operatorStick.getRawButton(climberDeployToggle)  ||( m_ds.getMatchTime() > 134) && !climber.isDeployed())) {
                 climber.toggleDeploy();
             }      
             lastDeployButton = operatorStick.getRawButton(climberDeployToggle);     
@@ -304,7 +306,7 @@ public class Team177Robot extends IterativeRobot {
         //peg.set(leftStick.getRawButton(pegButton));
         
         /* Stiff Arm Deploy Toggle*/
-        if(!lastStiffArmButton && operatorStick.getRawButton(stiffArmButton)) {
+       /* if(!lastStiffArmButton && operatorStick.getRawButton(stiffArmButton)) {
             if(stiffarm.get()) {
                 stiffarm.set(false);
             } else {
@@ -312,7 +314,10 @@ public class Team177Robot extends IterativeRobot {
             }               
         }      
         lastStiffArmButton = operatorStick.getRawButton(stiffArmButton);     
-                               
+         */
+        stiffarm.set(leftStick.getRawButton(stiffArmButton));
+        peg.set(operatorStick.getRawButton(pegLegButton));
+        
         if(enableShooter) {
             /* Shooter */
             if(operatorStick.getRawAxis(shooterElevateAxis) > 0) {
@@ -367,7 +372,7 @@ public class Team177Robot extends IterativeRobot {
     
     public void disabledPeriodic() {
         try {
-	    int new_automode = (m_ds.getDigitalIn(firstAutoSwitchChannel) ? 1 : 0) + (m_ds.getDigitalIn(secondAutoSwitchChannel) ? 2 : 0) + (m_ds.getDigitalIn(thirdAutoSwitchChannel) ? 4 : 0);
+	    int new_automode = (m_ds.getDigitalIn(firstAutoSwitchChannel) ? 0 : 4) + (m_ds.getDigitalIn(secondAutoSwitchChannel) ? 0 : 2) + (m_ds.getDigitalIn(thirdAutoSwitchChannel) ? 0 : 1);
 	    if (new_automode != autoMode)
 	    {
 
@@ -391,10 +396,10 @@ public class Team177Robot extends IterativeRobot {
                     case 4:
 			auto = new AutoModeThroughCenterDriveToFeeder(this);
 			break;
-/*		    case 4:
-			auto = new AutoModeShootFromSide(this);
-			break;
 		    case 5:
+			auto = new AutoModeCorner(this);
+			break;
+/*		    case 5:
 			auto = new AutoModeShootFromSidePickUpFrisbees(this);
 			break;
                     case 6:

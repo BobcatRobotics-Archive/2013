@@ -124,7 +124,7 @@ public class Climber extends Thread {
                
     public void setPTO(boolean on) {
         //System.out.println("setPTO: " + on);
-        if(on) {
+        if(!on) {
             if(pto.get()) {
                 pto.set(false);
             } 
